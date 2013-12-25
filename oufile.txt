@@ -1,0 +1,7 @@
+OU 0
+	OU 1
+		Position 1
+			Person A
+		Position 2
+			Person B
+	OU 2
