@@ -1,0 +1,92 @@
+=== TODO ===
+
+* Write more tests for different CSV format variations, especially those used by Excel and Calc.
+
+=== Warning about speed optimizations ===
+
+A try to speed up buffer operations (FCellBuffer, FWhitespaceBuffer)
+by memory preallocation using straightforward String Builder implementation
+resulted in about 25% slowdown compared with current implementation based
+on string concatenation. This happened on Linux and was not tested on other
+platforms. These changes were not commited.
+
+Using TStrBuf object (http://freepascal-bits.blogspot.com/2010/02/simple-string-buffer.html)
+for the same purpose showed neither noticable performance improvement nor a slowdown with
+the following results on 5,4 MB CSV file:
+Without StrBuf: 2392, 2363, 2544, 2441, 2422, 2407, 2467 ms
+With StrBuf:    2423, 2437, 2404, 2471, 2405 ms
+This happened on Linux too and was not tested on other platforms.
+These changes were not commited either.
+
+=== Some thoughts about CSV variations ===
+
+There are two CSV specifications:
+* RFC 4180 Common Format and MIME Type for Comma-Separated Values (CSV) Files
+  http://tools.ietf.org/html/rfc4180
+* An unofficial CSV specification
+  http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm#FileFormat
+
+The latter (unofficial) specification mentiones two CSV format features
+that are not part of RFC 4180. The first of them is mentioned as mandatory:
+1) Leading and trailing space-characters adjacent to comma field separators are ignored.
+   Fields with leading or trailing spaces must be delimited with double-quote characters.
+The second feature is optional and comprises several variations
+(http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm#CSVariations):
+2) Embedded line-feeds in fields. This one is also escaped sometimes. Often like in C ("\n").
+   Embedded commas in fields. Again, an escape character is sometimes used in place of the comma.
+   Check if line feeds are \n
+   Check if embedded double quotes are \"
+   Check if ???
+
+Here are some critics concerning both of these suggested features.
+
+Behavior (1) is explicitely forbidden by RFC 4180: "Spaces are considered part
+of a field and should not be ignored". There is a reason for this: when (1) is obeyed,
+simple loading and saving CSV document (without any modifications) will result in data loss.
+
+As for variations (2), there are more problems in implementing them than it seems at first glance:
+* It should be clearly defined what escaping scheme should be used:
+  - what characters must be escaped,
+  - what escaped characters have special meaning (like \r and \n),
+  - how to include these special characters into text
+    i.e. how to escape escaping (like \\).
+* It should be clearly defined whether/how escaping can be mixed with
+  traditional quotation scheme and what should take precedence.
+  Consider the following examples:
+    "quoted \"" field"
+    "embedded \, delimiter"
+    embedded \, delimiter
+    "embedded \\, delimiter"
+    \w\w\wescaped non-trimmable whitespace\w\w\w
+    "   quoted non-trimmable whitespace   "
+
+Implementing feature (1) on the CSV parser level still has a point.
+This feature requires to remove outer whitespace only (a whitespace outside quotes)
+and keep inner whitespace (a whitespace inside quotes) intact. However, an application
+that uses CSV parser does not have access to quotes and cannot distinguish between
+inner and outer whitespace. That is why this feature cannot be implemented by client
+application on top of parser, and should therefore be implemented by the parser itself.
+However it should be optional and disabled by default to prevent data loss.
+
+As for variations (2), they are too ambiguous to be implemented as is. The ambiguity
+can be removed to some degree by the following limitations:
+- traditional quoting takes precedence over backslash-escaping;
+- backslash-escaping of separators and quotation marks is forbidden to obey RFC 4180.
+These limitations allow client applications to implement backslash-escaping themselves
+on top of CSV parser, effectively turning backslash-escaping into special field syntax.
+Since CSV fields as defined by RFC 4180 can transparently store any sequence of characters,
+applications are not limited in defining their own subformats (such as backslash-escaping)
+and store them in CSV fields. That is why there is no point in implementing variations (2)
+on the parser level, unless they are made more specific and require access to CSV internals
+like feature (1) does.
+
+Alternatively, feature (2) can be implemented like in Python csv module, using 3 quotation
+modes: "full", "minimal" and "no quotation". "full" and "minimal" modes would instruct 
+csv writer to quote all fields or just fields containing special characters, while 
+"no quotation" mode would turn quotation off competely, instructing both reader and 
+writer to use backslash-escaping instead.
+
+=== Links ===
+http://tools.ietf.org/html/rfc4180#section-2
+http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm#FileFormat
+http://docs.python.org/library/csv.html

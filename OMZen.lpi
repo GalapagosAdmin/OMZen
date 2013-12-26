@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="5">
       <Unit0>
         <Filename Value="OMZen.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -45,9 +45,25 @@
         <Filename Value="omz_main.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="omz_main"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="omz_logic.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="omz_logic"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="csvdocument\csvdocument.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CsvDocument"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="utf8tools\charencstreams.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="charencstreams"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -58,6 +74,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="csvdocument;utf8tools"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
@@ -75,7 +92,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="4">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -85,6 +102,9 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="EControlC"/>
+      </Item4>
     </Exceptions>
   </Debugging>
 </CONFIG>

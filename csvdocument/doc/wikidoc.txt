@@ -1,0 +1,86 @@
+{{CsvDocument}}
+
+=== About ===
+CsvDocument library is a unit contaning set of classes for [http://en.wikipedia.org/wiki/Comma-separated_values CSV files] handling. The library was created to exchange data with OpenOffice Calc / MS Office Excel using CSV as intermediate format.
+
+Its main characteristics are:
+
+* Random read/write access to CSV fields based on object model (TCSVDocument class). This requires preloading CSV file content into memory but allows to edit any field at any moment.
+* Serial access (field-by-field) parsing of CSV files using TCSVParser class. It helps to read CSV file content directly without preloading the whole file into memory.
+* Field-by-field building of CSV files using TCSVBuilder class. This helps to write CSV content directly to file and thus avoid using in-memory buffer. Implemented in version 0.4 and above.
+* CSV implementation is compatible with such of OpenOffice Calc / MS Office Excel, that means CSV files saved from Calc/Excel can be edited using CsvDocument library and vice versa.
+* Both UTF-8 encoding and windows-xxx codepages can be used with CsvDocument library. The library uses ''string'' type for all string operations and will not do any encoding conversion for you. Keep in mind though that Excel does not support CSV files in UTF-8.
+* Support for line breaks embedded into CSV fields. It was one of the reasons to reinvent the wheel. OO Calc supports this feature as well, but MS Excel does not.
+* StringGrid-like field access with TCsvDocument.Cells[ACol, ARow]. Field access is safe, that means when you try to access non-existing field you do not get "Index out of bounds" exception, but get an empty string result. To distingush between empty and non-existing fields there are methods and properties like HasRow/HasCell and RowCount/ColCount.
+* Support for search in single row/column using IndexOfRow(AString, ACol) / IndexOfCol(AString, ARow). Implemented in version 0.3 and above.
+* No additional limits on field length, number of rows/fields, etc. other than performance, memory usage, ''string'' type limit of 2 Gb and signed 32 bit integer value limit.
+* Compliance with RFC 4180 (http://tools.ietf.org/html/rfc4180#section-2) using default settings, as of version 0.4 and above.
+* Compliance with unofficial CSV specification (http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm#FileFormat), as of version 0.3 and above. Requires setting IgnoreOuterWhitespace to True in version 0.4 and above.
+
+=== Author ===
+Vladimir Zhirov
+
+=== Contributors ===
+Luiz Americo Pereira Camara
+Mattias Gaertner
+
+=== License ===
+[http://svn.freepascal.org/svn/lazarus/trunk/COPYING.modifiedLGPL Modified] [http://svn.freepascal.org/svn/lazarus/trunk/COPYING.LGPL LGPL] (same as FPC RTL and Lazarus LCL).
+
+=== Dependencies ===
+The library is a single Pascal source file that only depends on FPC RTL and FCL.
+
+=== Change Log ===
+==== Version 0.1 (2010-01-22) ====
+* initial release.
+==== Version 0.2 (2010-05-31) ====
+* fixed bug in line ending conversion.
+* fixed compilation with range checking on.
+* exposed QuoteCSVString function to simplify CSV generation without TCsvDocument class.
+* minor code cleanup.
+==== Version 0.3 (2011-01-14) ====
+* CsvParser API changed: callback methods were replaced by ResetParser/ParseNextCell methods to allow using the library in pure functional programs. See example of new API usage in TCSVDocument.LoadFromStream.
+* CsvDocument API changed: TrimEmptyCells were renamed to RemoveTrailingEmptyCells
+* support for trimming leading and trailing whitespace in fields. New TrimWhitespace property added. '''Warning''': TrimWhitespace is enabled by default. 
+* support for search in single row/column using IndexOfRow(AString, ACol) / IndexOfCol(AString, ARow).
+* performance improvements.
+* code cleanup.
+* added simple test suite.
+==== Version 0.4 (2011-05-10) ====
+* replaced QuoteCSVString function with TCSVBuilder class. See example of its usage in TCSVDocument.SaveToStream.
+* renamed TrimWhitespace to IgnoreOuterWhitespace (to be consistent with newly introduced QuoteOuterWhitespace property).
+* support for equal column count throughout the document (required by RFC 4180). See new EqualColCountPerRow property.
+* changed default settings to RFC 4180 compliant ones (comma as Delimiter, double quote as QuoteChar, CRLF as line ending, ignoring outer whitespace off, equal column count on).
+* implemented conversion of line endings embedded into fields when parsing and building a CSV file. It helps to prevent mixed line endings in output file when using OS-specific line endings and working with the same file on multiple OSes.
+* moved CSV format settings to TCSVHandler class (an ancestor of TCSVParser, TCSVBuilder and TCSVDocument).
+* updated test suite for RFC 4180 compliance.
+* fixed minor annoyances in demo application.
+* included optimized ChangeLineEndings function by Mattias Gaertner.
+* speed optimizations, demo improvements and Lazarus package by Luiz Americo Pereira Camara.
+
+=== Status ===
+Beta
+
+=== Download ===
+The latest release is available at Lazarus-CCR:
+
+http://sourceforge.net/projects/lazarus-ccr/files/CsvDocument/CsvDocument%200.4/csvdocument-0.4.zip/download
+
+The download contains the library and demo application.
+
+You can get development version from Lazarus-CCR svn reporsitory:
+
+  svn co https://lazarus-ccr.svn.sourceforge.net/svnroot/lazarus-ccr/components/csvdocument csvdocument
+
+=== Installation and usage ===
+
+Include unit CsvDocument in the ''uses'' section. Set path for it in project settings if needed.
+Alternatively:
+1. Open "csvdocument_package.lpk" file from Lazarus IDE using menu: "Package -> Open package file (.lpk) ...".
+2. Compile the package.
+3. Open your project.
+4. Add the package as a requirement to your project using Project Inspector.
+
+=== Contact ===
+
+Please send bug reports and patches to the e-mail you find in the unit source code.

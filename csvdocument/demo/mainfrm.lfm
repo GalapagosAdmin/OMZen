@@ -1,0 +1,237 @@
+object fmCSVTest: TfmCSVTest
+  Left = 401
+  Height = 450
+  Top = 175
+  Width = 401
+  Caption = 'CSV Demo'
+  ClientHeight = 450
+  ClientWidth = 401
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '0.9.31'
+  object sgView: TStringGrid
+    Left = 0
+    Height = 119
+    Top = 139
+    Width = 401
+    Align = alClient
+    Anchors = []
+    ColCount = 1
+    Constraints.MinHeight = 10
+    DefaultColWidth = 100
+    FixedCols = 0
+    FixedRows = 0
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goRowSizing, goColSizing, goThumbTracking, goSmoothScroll]
+    RowCount = 1
+    TabOrder = 0
+    OnSelectCell = sgViewSelectCell
+  end
+  object mmSource: TMemo
+    Left = 0
+    Height = 51
+    Top = 22
+    Width = 401
+    Align = alTop
+    Constraints.MinHeight = 10
+    OnChange = mmSourceChange
+    ScrollBars = ssVertical
+    TabOrder = 1
+  end
+  object splTop: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 73
+    Width = 401
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object mmResult: TMemo
+    Left = 0
+    Height = 64
+    Top = 386
+    Width = 401
+    Align = alBottom
+    Constraints.MinHeight = 10
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 3
+  end
+  object splBottom1: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 381
+    Width = 401
+    Align = alBottom
+    Anchors = [akLeft, akBottom]
+    ResizeAnchor = akBottom
+  end
+  object mmCellValue: TMemo
+    Left = 0
+    Height = 74
+    Top = 285
+    Width = 401
+    Align = alBottom
+    Constraints.MinHeight = 10
+    OnChange = mmCellValueChange
+    ScrollBars = ssBoth
+    TabOrder = 5
+    WordWrap = False
+  end
+  object splBottom2: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 5
+    Top = 280
+    Width = 401
+    Align = alBottom
+    Anchors = [akLeft, akBottom]
+    ResizeAnchor = akBottom
+  end
+  object lblSource: TLabel
+    Left = 5
+    Height = 17
+    Top = 5
+    Width = 391
+    Align = alTop
+    BorderSpacing.Left = 5
+    BorderSpacing.Top = 5
+    BorderSpacing.Right = 5
+    Caption = 'Source CSV string'
+    ParentColor = False
+  end
+  object lblOutput: TLabel
+    Left = 5
+    Height = 17
+    Top = 364
+    Width = 391
+    Align = alBottom
+    BorderSpacing.Left = 5
+    BorderSpacing.Top = 5
+    BorderSpacing.Right = 5
+    Caption = 'Output CSV string'
+    ParentColor = False
+  end
+  object lblCSVDoc: TLabel
+    Left = 5
+    Height = 17
+    Top = 83
+    Width = 391
+    Align = alTop
+    BorderSpacing.Left = 5
+    BorderSpacing.Top = 5
+    BorderSpacing.Right = 5
+    Caption = 'CSV Document'
+    ParentColor = False
+  end
+  object lblCellContent: TLabel
+    Left = 5
+    Height = 17
+    Top = 263
+    Width = 391
+    Align = alBottom
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Left = 5
+    BorderSpacing.Top = 5
+    BorderSpacing.Right = 5
+    Caption = 'Selected cell content'
+    ParentColor = False
+  end
+  object pnButtons: TPanel
+    Left = 0
+    Height = 39
+    Top = 100
+    Width = 401
+    Align = alTop
+    AutoSize = True
+    ClientHeight = 39
+    ClientWidth = 401
+    TabOrder = 7
+    object btnSave: TButton
+      AnchorSideLeft.Control = cbbDelimiter
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = pnButtons
+      Left = 116
+      Height = 27
+      Top = 6
+      Width = 85
+      AutoSize = True
+      BorderSpacing.Left = 5
+      BorderSpacing.Top = 5
+      BorderSpacing.Bottom = 5
+      Caption = 'Save'
+      OnClick = btnSaveClick
+      TabOrder = 0
+    end
+    object Delimiter: TLabel
+      AnchorSideLeft.Control = pnButtons
+      AnchorSideTop.Control = cbbDelimiter
+      AnchorSideBottom.Control = cbbDelimiter
+      AnchorSideBottom.Side = asrBottom
+      Left = 6
+      Height = 27
+      Top = 6
+      Width = 52
+      Anchors = [akTop, akLeft, akBottom]
+      BorderSpacing.Left = 5
+      Caption = 'Delimiter'
+      Layout = tlCenter
+      ParentColor = False
+    end
+    object cbbDelimiter: TComboBox
+      AnchorSideLeft.Control = Delimiter
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = pnButtons
+      Left = 63
+      Height = 27
+      Top = 6
+      Width = 48
+      BorderSpacing.Left = 5
+      BorderSpacing.Top = 5
+      BorderSpacing.Bottom = 5
+      ItemHeight = 0
+      ItemIndex = 0
+      Items.Strings = (
+        ';'
+        ','
+      )
+      OnChange = cbbDelimiterChange
+      TabOrder = 1
+      Text = ';'
+    end
+    object btnLoad: TButton
+      AnchorSideLeft.Control = btnSave
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = pnButtons
+      Left = 206
+      Height = 27
+      Top = 6
+      Width = 85
+      AutoSize = True
+      BorderSpacing.Left = 5
+      BorderSpacing.Top = 5
+      BorderSpacing.Bottom = 5
+      Caption = 'Load'
+      OnClick = btnLoadClick
+      TabOrder = 2
+    end
+  end
+  object UpdateTimer: TIdleTimer
+    Interval = 100
+    OnTimer = UpdateTimerTimer
+    left = 24
+    top = 176
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = '.csv'
+    Filter = 'CSV files|*.csv'
+    left = 96
+    top = 176
+  end
+  object OpenDialog: TOpenDialog
+    Filter = 'CSV files|*.csv'
+    left = 168
+    top = 176
+  end
+end

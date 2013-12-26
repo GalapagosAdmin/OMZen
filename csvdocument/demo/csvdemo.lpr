@@ -1,4 +1,4 @@
-program OMZen;
+program csvdemo;
 
 {$mode objfpc}{$H+}
 
@@ -7,15 +7,14 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, omz_main, omz_logic, charencstreams, CsvDocument
-  { you can add units after this };
+  Forms, mainfrm;
 
-{$R *.res}
+{$R csvdemo.res}
 
 begin
-  RequireDerivedFormResource := True;
+  Application.Title := 'CsvDemo';
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfmCSVTest, fmCSVTest);
   Application.Run;
 end.
 

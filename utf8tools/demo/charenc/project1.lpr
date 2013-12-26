@@ -1,4 +1,4 @@
-program OMZen;
+program project1;
 
 {$mode objfpc}{$H+}
 
@@ -7,13 +7,13 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, omz_main, omz_logic, charencstreams, CsvDocument
-  { you can add units after this };
+  Forms
+  { you can add units after this }, Unit1, LResources, utf8tools;
 
-{$R *.res}
+{$IFDEF WINDOWS}{$R project1.rc}{$ENDIF}
 
 begin
-  RequireDerivedFormResource := True;
+  {$I project1.lrs}
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
   Application.Run;

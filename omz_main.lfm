@@ -1,21 +1,25 @@
 object Form1: TForm1
-  Left = 674
+  Left = 449
   Height = 413
-  Top = 188
+  Top = 174
   Width = 600
   Caption = 'OM Zen'
-  ClientHeight = 413
+  ClientHeight = 392
   ClientWidth = 600
+  Menu = MainMenu1
   LCLVersion = '1.1'
-  object TreeView1: TTreeView
+  object tvOrgChart: TTreeView
     Left = 8
     Height = 264
     Top = 8
     Width = 475
     DefaultItemHeight = 16
+    DragMode = dmAutomatic
     Images = ImageList1
+    ScrollBars = ssAutoVertical
     TabOrder = 0
-    OnClick = TreeView1Click
+    OnClick = tvOrgChartClick
+    OnDragOver = tvOrgChartDragOver
     Items.Data = {
       F9FFFFFF0200010000000000000000000000FFFFFFFFFFFFFFFF020000000000
       000001040000004F5520300000000000000000FFFFFFFFFFFFFFFF0200000000
@@ -69,6 +73,35 @@ object Form1: TForm1
         TabOrder = 0
         OnDragOver = LabeledEdit1DragOver
       end
+      object LabeledEdit2: TLabeledEdit
+        Left = 76
+        Height = 26
+        Top = 45
+        Width = 200
+        EditLabel.AnchorSideTop.Control = LabeledEdit2
+        EditLabel.AnchorSideTop.Side = asrCenter
+        EditLabel.AnchorSideRight.Control = LabeledEdit2
+        EditLabel.AnchorSideBottom.Control = LabeledEdit2
+        EditLabel.AnchorSideBottom.Side = asrBottom
+        EditLabel.Left = 22
+        EditLabel.Height = 13
+        EditLabel.Top = 52
+        EditLabel.Width = 51
+        EditLabel.Caption = 'Object ID:'
+        EditLabel.ParentColor = False
+        LabelPosition = lpLeft
+        TabOrder = 1
+        OnDragOver = LabeledEdit1DragOver
+      end
+      object CheckBox1: TCheckBox
+        Left = 291
+        Height = 22
+        Top = 17
+        Width = 158
+        Caption = 'Manages own Org. Unit'
+        OnChange = CheckBox1Change
+        TabOrder = 2
+      end
     end
   end
   object bbAddPosition: TBitBtn
@@ -89,9 +122,18 @@ object Form1: TForm1
     OnClick = bbAddEmployee1Click
     TabOrder = 4
   end
+  object bbAddEmployee2: TBitBtn
+    Left = 488
+    Height = 30
+    Top = 104
+    Width = 91
+    Caption = 'Delete Object'
+    OnClick = bbAddEmployee2Click
+    TabOrder = 5
+  end
   object ImageList1: TImageList
-    left = 517
-    top = 112
+    left = 488
+    top = 224
     Bitmap = {
       4C69040000001000000010000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -223,5 +265,32 @@ object Form1: TForm1
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00
     }
+  end
+  object MainMenu1: TMainMenu
+    left = 536
+    top = 224
+    object MenuItem1: TMenuItem
+      Caption = '&File'
+      OnClick = MenuItem1Click
+      object MenuItem4: TMenuItem
+        Caption = 'Import SSL 1000...'
+        OnClick = MenuItem4Click
+      end
+      object MenuItem2: TMenuItem
+        Caption = '&Import SSL 1001...'
+        OnClick = MenuItem2Click
+      end
+      object miProcess: TMenuItem
+        Caption = 'Update Chart'
+        OnClick = miProcessClick
+      end
+      object MenuItem3: TMenuItem
+        Caption = '&Export...'
+      end
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    left = 504
+    top = 144
   end
 end
