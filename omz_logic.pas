@@ -41,6 +41,7 @@ type
     HasParent:Boolean;
     ParentObjID:Longint;
     Stale:Boolean;
+    Chief:Boolean;
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -99,14 +100,16 @@ Procedure UpdateHasParent;
     i,j:LongInt;
   begin
    for i := low(ObjectList) to high(ObjectList) do
+     begin
      // Look for Org. Unit objects with no parent
-     If (not ObjectList[i].HasParent) and (ObjectList[1].ObjType = 'O') then
+     If (not ObjectList[i].HasParent) and (ObjectList[i].ObjType = 'O') then
        begin
          // Search for the parent
          for j := low(RelationshipList) to high(RelationshipList) do
            // Obj to Obj relationship
            If (RelationshipList[j].SrcObjType = 'O')
              and (RelationshipList[j].DestObjType = 'O')
+             and (RelationshipList[j].Relationship = 'A002')
              // Where the source is the current ObjectID
              and (RelationshipList[j].SrcObjNum = ObjectList[i].ObjNum )
              // If so, then we have a parent ID, so we set HasParent to True.
@@ -115,8 +118,30 @@ Procedure UpdateHasParent;
                  HasParent := True;
                  ParentObjID := RelationshipList[j].DestObjNum;
                end;
+         end; // if
+     // Search for Positions w/o assignment to OU
+     If (not ObjectList[i].HasParent) and (ObjectList[i].ObjType = 'S') then
+       begin
+         // Search for the parent
+         for j := low(RelationshipList) to high(RelationshipList) do
+           // Obj to Obj relationship
+           If (RelationshipList[j].SrcObjType = 'S')
+             and (RelationshipList[j].DestObjType = 'O')
+             and ( (RelationshipList[j].Relationship = 'A003')   // Normal Reporting
+                     or (RelationshipList[j].Relationship = 'A012') )  // Chief (Manager)
+             // Where the source is the current ObjectID
+             and (RelationshipList[j].SrcObjNum = ObjectList[i].ObjNum )
+             // If so, then we have a parent ID, so we set HasParent to True.
+             then
+               with ObjectList[i] do begin
+                 HasParent := True;
+                 ParentObjID := RelationshipList[j].DestObjNum;
+                 if RelationshipList[j].Relationship = 'A012' then
+                   Chief := True;
+               end;
        end;
-  end;
+    end; // for
+  end; // of Procedure
 
 // Convert Excel UTF16LE TSV .txt file to UTF8 for easier processing
 Function UTF16FiletoUTF8File(const InFileName:UTF8String):UTF8String;
@@ -208,6 +233,7 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                  LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
                  LineBuffer.HasParent := False;
                  LineBuffer.Stale := True;
+                 LineBuffer.Chief := False;
                  LineBuffer.ParentObjID := 0;
                  Inc(RecordsLoaded);
                  SetLength(ObjectList,RecordsLoaded);

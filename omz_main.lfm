@@ -1,18 +1,19 @@
 object Form1: TForm1
   Left = 449
-  Height = 413
+  Height = 477
   Top = 174
-  Width = 600
+  Width = 791
   Caption = 'OM Zen'
-  ClientHeight = 392
-  ClientWidth = 600
+  ClientHeight = 456
+  ClientWidth = 791
   Menu = MainMenu1
   LCLVersion = '1.1'
   object tvOrgChart: TTreeView
     Left = 8
-    Height = 264
+    Height = 306
     Top = 8
-    Width = 475
+    Width = 650
+    Anchors = [akTop, akLeft, akRight, akBottom]
     DefaultItemHeight = 16
     DragMode = dmAutomatic
     Images = ImageList1
@@ -33,26 +34,28 @@ object Form1: TForm1
     }
   end
   object bbAddChildOU: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 8
     Width = 91
+    Anchors = [akTop, akRight]
     Caption = 'Add Child OU'
     OnClick = bbAddChildOUClick
     TabOrder = 1
   end
   object PageControl1: TPageControl
-    Left = 8
+    Left = 0
     Height = 125
-    Top = 280
-    Width = 577
+    Top = 331
+    Width = 791
     ActivePage = TabSheet1
+    Align = alBottom
     TabIndex = 0
     TabOrder = 2
     object TabSheet1: TTabSheet
       Caption = 'Object Properties'
       ClientHeight = 94
-      ClientWidth = 569
+      ClientWidth = 783
       object LabeledEdit1: TLabeledEdit
         Left = 76
         Height = 26
@@ -105,28 +108,31 @@ object Form1: TForm1
     end
   end
   object bbAddPosition: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 40
     Width = 91
+    Anchors = [akTop, akRight]
     Caption = 'Add Position'
     OnClick = bbAddPositionClick
     TabOrder = 3
   end
   object bbAddEmployee1: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 72
     Width = 91
+    Anchors = [akTop, akRight]
     Caption = 'Add Employee'
     OnClick = bbAddEmployee1Click
     TabOrder = 4
   end
   object bbAddEmployee2: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 104
     Width = 91
+    Anchors = [akTop, akRight]
     Caption = 'Delete Object'
     OnClick = bbAddEmployee2Click
     TabOrder = 5
@@ -284,13 +290,22 @@ object Form1: TForm1
         Caption = 'Update Chart'
         OnClick = miProcessClick
       end
-      object MenuItem3: TMenuItem
-        Caption = '&Export...'
+      object miExportTsv: TMenuItem
+        Caption = '&Export TSV...'
+        OnClick = miExportTsvClick
+      end
+      object miExportDot: TMenuItem
+        Caption = 'Export DOT...'
+        OnClick = miExportDotClick
       end
     end
   end
   object OpenDialog1: TOpenDialog
     left = 504
     top = 144
+  end
+  object SaveDialog1: TSaveDialog
+    left = 587
+    top = 153
   end
 end

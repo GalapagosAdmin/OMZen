@@ -24,11 +24,13 @@ type
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
+    miExportTsv: TMenuItem;
     MenuItem4: TMenuItem;
+    miExportDot: TMenuItem;
     miProcess: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
+    SaveDialog1: TSaveDialog;
     TabSheet1: TTabSheet;
     tvOrgChart: TTreeView;
     procedure bbAddChildOUClick(Sender: TObject);
@@ -40,6 +42,8 @@ type
       State: TDragState; var Accept: Boolean);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure miExportDotClick(Sender: TObject);
+    procedure miExportTsvClick(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure miProcessClick(Sender: TObject);
     procedure tvOrgChartClick(Sender: TObject);
@@ -170,6 +174,36 @@ begin
     end;
 end;
 
+procedure TForm1.miExportDotClick(Sender: TObject);
+var
+ dotFile:TextFile;
+ i:LongInt;
+begin
+  if SaveDialog1.Execute then
+   begin
+    AssignFile(dotFile, SaveDialog1.FileName);
+    Rewrite(dotFile);
+    Writeln(dotfile, 'digraph o { rankdir=BT ');
+    For i := low(ObjectList) to high(ObjectList) do
+      if ObjectList[i].ObjType = 'O' then
+      begin
+        case ObjectList[i].hasparent of
+
+          False: Writeln(dotFile, IntToStr(ObjectList[i].objnum) + ';');
+          True:Writeln(dotFile, IntToStr(ObjectList[i].objnum)+ ' -> ' + IntToStr(ObjectList[i].ParentObjID) + ';' );
+        end; // of CASE
+      end; // of FOR
+    Writeln(dotfile, '}');
+    System.close(dotfile);
+   end;
+end;
+
+procedure TForm1.miExportTsvClick(Sender: TObject);
+begin
+  if OpenDialog1.Execute then
+    tvOrgChart.SaveToFile(SaveDialog1.FileName);
+end;
+
 procedure TForm1.MenuItem4Click(Sender: TObject);
 begin
     if OpenDialog1.Execute then
@@ -179,21 +213,9 @@ begin
 end;
 
 procedure TForm1.miProcessClick(Sender: TObject);
-var
-  h, i,j:longint;
-  ParentNode:TTreeNode;
-begin
-  tvOrgChart.items.clear;
-  // This transfers parent ID relationship from IT1001 to IT1000 structure.
-  UpdateHasParent;
- for h := 1 to 10 do // 10 rounds = max 10 levels org. chart heirarchy
-   // Loop through all objects
-   for i := low(ObjectList) to high(ObjectList) do
-     // We are only interested in Org. Units for now, and ones we haven't updated yet.
-    if (ObjectList[i].ObjType = 'O') and (ObjectList[i].Stale) then  // Org. Unit
-    begin
-     case ObjectList[i].HasParent of
-      False: begin // Has no parent, this is a root OU
+
+Procedure Add_ou_no_parent(const h,i,j:longint);
+ begin // Has no parent, this is a root OU
        with
        tvOrgChart.Items.AddChildObject(nil,               // Parent ID
                   ObjectList[i].LongText,                 // Long Text
@@ -204,28 +226,81 @@ begin
                     end;
        ObjectList[i].Stale := False;
       end;
-      True:begin   // Has a parent, we should put this under an existing OU
-             // Search for the parent
-             ParentNode := tvOrgChart.Items.FindNodeWithData(Pointer(ObjectList[i].ParentObjID));
-             if ParentNode = nil then
-               begin  // We couldn't find the parent on the Org. Chart
-                SendDebug('Skipping OU with missing parent: ' + IntToStr(ObjectList[i].ObjNum));
-               end
-             else // Parent found
-              begin   // We found the parent
-             with
-                tvOrgChart.Items.AddChildObject(ParentNode,       // Parent ID
-                        ObjectList[i].LongText,                 // Long Text
-                        Pointer(ObjectList[i].ObjNum)) do       // Object Number
-                          begin
-                            ImageIndex := IDX_ORG_UNIT;
-                            SelectedIndex := IDX_ORG_UNIT;
-                          end;
-                ObjectList[i].Stale := False;
-              end; // parent found
-           end; // of TRUE
-     end;
-    end;
+
+Procedure Add_ou_with_parent(const h,i,j:Longint);
+  var
+    ParentNode:TTreeNode;
+       begin   // Has a parent, we should put this under an existing OU
+              // Search for the parent
+              ParentNode := tvOrgChart.Items.FindNodeWithData(Pointer(ObjectList[i].ParentObjID));
+              if ParentNode = nil then
+                begin  // We couldn't find the parent on the Org. Chart
+                 SendDebug('Level:' + IntToStr(H) + ' Skipping OU with missing parent: ' + IntToStr(ObjectList[i].ObjNum) + ObjectList[i].LongText);
+                end
+              else // Parent found
+               begin   // We found the parent
+              with
+                 tvOrgChart.Items.AddChildObject(ParentNode,       // Parent ID
+                         ObjectList[i].LongText,                 // Long Text
+                         Pointer(ObjectList[i].ObjNum)) do       // Object Number
+                           begin
+                             ImageIndex := IDX_ORG_UNIT;
+                             SelectedIndex := IDX_ORG_UNIT;
+                           end;
+                 ParentNode.Expand(True);
+                 ObjectList[i].Stale := False;
+               end; // parent found
+            end; // of TRUE
+
+Procedure Add_Position(const h,i,j:LongInt);
+ var
+   ParentNode:TTreeNode;
+   begin
+    ParentNode := tvOrgChart.Items.FindNodeWithData(Pointer(ObjectList[i].ParentObjID));
+    if ParentNode = nil then
+      begin  // We couldn't find the parent on the Org. Chart
+       SendDebug('Level:' + IntToStr(H) + ' Skipping Position with missing parent: ' + IntToStr(ObjectList[i].ObjNum) + ObjectList[i].LongText);
+      end
+    else // Parent found
+     begin   // We found the parent
+    with
+       tvOrgChart.Items.AddChildObject(ParentNode,       // Parent ID
+               ObjectList[i].LongText,                 // Long Text
+               Pointer(ObjectList[i].ObjNum)) do       // Object Number
+                 begin
+                   case ObjectList[i].Chief of
+                     false:ImageIndex := IDX_POSITION;
+                     true:ImageIndex :=  IDX_CHIEF_POSITION;
+                   end;
+                   SelectedIndex := ImageIndex;
+                 end;
+       ParentNode.Expand(True);
+       ObjectList[i].Stale := False;
+     end; // parent found
+
+   end; // Add Position
+
+var
+  h, i,j:longint;
+  ParentNode:TTreeNode;
+begin
+  tvOrgChart.items.clear;
+  // This transfers parent ID relationship from IT1001 to IT1000 structure.
+  UpdateHasParent;
+ for h := 1 to 20 do // 10 rounds = max 10 levels org. chart heirarchy
+   // Loop through all objects
+   for i := low(ObjectList) to high(ObjectList) do
+     if (ObjectList[i].Stale) then
+     // We are only interested in Org. Units for now, and ones we haven't updated yet.
+    case ObjectList[i].ObjType of  // Org. Unit
+     'O': case ObjectList[i].HasParent of
+            False: Add_ou_no_parent(h,i,j);
+            True: Add_ou_with_parent(h,i,j);
+          end;
+     'S': Add_position(h,i,j);
+     else
+       SendDebug('Skipping Unhandled Object Type: ' + ObjectList[i].ObjType );
+    end; // Case ObjType
 
 end;
 
