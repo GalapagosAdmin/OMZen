@@ -23,9 +23,10 @@ type
     LabeledEdit2: TLabeledEdit;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
-    MenuItem2: TMenuItem;
+    miImportSSL1001: TMenuItem;
+    miExportHTML: TMenuItem;
     miExportTsv: TMenuItem;
-    MenuItem4: TMenuItem;
+    miImportSSL1000: TMenuItem;
     miExportDot: TMenuItem;
     miProcess: TMenuItem;
     OpenDialog1: TOpenDialog;
@@ -41,10 +42,11 @@ type
     procedure LabeledEdit1DragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
     procedure MenuItem1Click(Sender: TObject);
-    procedure MenuItem2Click(Sender: TObject);
+    procedure miImportSSL1001Click(Sender: TObject);
+    procedure miExportHTMLClick(Sender: TObject);
     procedure miExportDotClick(Sender: TObject);
     procedure miExportTsvClick(Sender: TObject);
-    procedure MenuItem4Click(Sender: TObject);
+    procedure miImportSSL1000Click(Sender: TObject);
     procedure miProcessClick(Sender: TObject);
     procedure tvOrgChartClick(Sender: TObject);
     procedure tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;
@@ -166,32 +168,108 @@ begin
 
 end;
 
-procedure TForm1.MenuItem2Click(Sender: TObject);
+procedure TForm1.miImportSSL1001Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
     begin
       Import_ADP_HRP1001(OpenDialog1.FileName);
+      miProcess.enabled := True;
     end;
+end;
+
+procedure TForm1.miExportHTMLClick(Sender: TObject);
+var
+  Node: TTreeNode;
+  Indent, s: Integer;
+  Padding: utf8string;
+  icon_file: utf8string;
+  htmlFile:TextFile;
+const
+  LevelIndent = 4;
+begin
+  if SaveDialog1.Execute then
+   begin
+    AssignFile(htmlFile, SaveDialog1.FileName);
+    Rewrite(htmlFile);
+    Writeln(htmlFile, '<html><head><title>Org. Chart</title></head><body><pre>');
+
+    Node := tvOrgChart.Items.GetFirstNode;
+    while Node <> nil do
+     begin
+       if Node.Level = 0 then
+        padding := ''
+       else
+        begin
+//         Padding := StringOfChar(' ', Node.Level * LevelIndent-1);
+//         s := 1;
+         padding := '';
+         for s := 1 to ((Node.Level-1) * LevelIndent) do //step 4 do
+           begin
+//         while s <= length(Padding) do begin
+           if (s-1) mod 4 = 0              then
+             padding := padding +  '│'
+           else
+             padding := padding + '&nbsp;'
+//           Inc(s, 4);
+         end;
+         Padding := Padding + '└───';
+        end;
+      case Node.ImageIndex of
+        IDX_ORG_UNIT:icon_file := 'ou_icon.png';
+        IDX_POSITION:icon_file := 'normal_position_icon.png';
+        IDX_CHIEF_POSITION:icon_file := 'chief_position_icon.png';
+        IDX_EMPLOYEE:icon_file := 'employee_icon.png';
+        else
+          icon_file := '';
+      end;
+      Writeln(htmlFile, Padding + '<img src="' +
+                                icon_file + '">&nbsp;'
+                                + Node.Text + '');
+//      + Node.Text + '<br>');
+      Node := Node.GetNext;
+     end;
+
+    Writeln(htmlFile, '</pre></body></html>');
+    System.close(htmlFile);
+   end;
 end;
 
 procedure TForm1.miExportDotClick(Sender: TObject);
 var
  dotFile:TextFile;
  i:LongInt;
+ tmpStr:UTF8String;
 begin
   if SaveDialog1.Execute then
    begin
     AssignFile(dotFile, SaveDialog1.FileName);
     Rewrite(dotFile);
-    Writeln(dotfile, 'digraph o { rankdir=BT ');
+//    Writeln(dotfile, 'digraph o { rankdir=BT ');
+    Writeln(dotfile, 'digraph o { rankdir=RL; ratio=compress ');
+    writeln(dotfile,'node [shape=box];');
     For i := low(ObjectList) to high(ObjectList) do
-      if ObjectList[i].ObjType = 'O' then
+      if ObjectList[i].ObjType = OBJ_ORG_UNIT then
       begin
         case ObjectList[i].hasparent of
 
-          False: Writeln(dotFile, IntToStr(ObjectList[i].objnum) + ';');
-          True:Writeln(dotFile, IntToStr(ObjectList[i].objnum)+ ' -> ' + IntToStr(ObjectList[i].ParentObjID) + ';' );
-        end; // of CASE
+          False: begin
+            tmpStr :=  IntToStr(ObjectList[i].objnum)
+                          + ' [label = "' + ObjectList[i].LongText + '"]'
+                          + ';';
+            Writeln(dotFile, tmpStr);
+            end;
+
+          True:begin
+            tmpStr :=  IntToStr(ObjectList[i].objnum)
+            + ' [label = "' + DotStrip(ObjectList[i].LongText) + '"];';
+//            + ' [label = "O ' + IntToStr(ObjectList[i].objnum) + '"];';
+            Writeln(dotFile, tmpStr);
+
+//                          + ' -> ' + IntToStr(ObjectList[i].ParentObjID) + ';';
+//            Writeln(dotFile, tmpStr);
+            Writeln(dotFile, IntToStr(ObjectList[i].objnum)+ ' -> ' + IntToStr(ObjectList[i].ParentObjID) + ';' );
+               end;
+          end; // of CASE
       end; // of FOR
     Writeln(dotfile, '}');
     System.close(dotfile);
@@ -204,11 +282,12 @@ begin
     tvOrgChart.SaveToFile(SaveDialog1.FileName);
 end;
 
-procedure TForm1.MenuItem4Click(Sender: TObject);
+procedure TForm1.miImportSSL1000Click(Sender: TObject);
 begin
     if OpenDialog1.Execute then
     begin
       Import_ADP_HRP1000(OpenDialog1.FileName);
+      miImportSSL1001.enabled := true;
     end;
 end;
 
@@ -280,6 +359,8 @@ Procedure Add_Position(const h,i,j:LongInt);
 
    end; // Add Position
 
+const
+  MAX_DEPTH = 20;
 var
   h, i,j:longint;
   ParentNode:TTreeNode;
@@ -287,7 +368,7 @@ begin
   tvOrgChart.items.clear;
   // This transfers parent ID relationship from IT1001 to IT1000 structure.
   UpdateHasParent;
- for h := 1 to 20 do // 10 rounds = max 10 levels org. chart heirarchy
+ for h := 1 to MAX_DEPTH do // 10 rounds = max 10 levels org. chart heirarchy
    // Loop through all objects
    for i := low(ObjectList) to high(ObjectList) do
      if (ObjectList[i].Stale) then
@@ -301,7 +382,9 @@ begin
      else
        SendDebug('Skipping Unhandled Object Type: ' + ObjectList[i].ObjType );
     end; // Case ObjType
-
+  miExportHTML.enabled := True;
+  miExportDot.enabled := True;
+  miExportTsv.enabled := True;
 end;
 
 procedure TForm1.tvOrgChartClick(Sender: TObject);

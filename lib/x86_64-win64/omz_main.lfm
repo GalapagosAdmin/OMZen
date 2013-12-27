@@ -1,21 +1,26 @@
 object Form1: TForm1
-  Left = 674
-  Height = 413
-  Top = 188
-  Width = 600
+  Left = 449
+  Height = 477
+  Top = 174
+  Width = 791
   Caption = 'OM Zen'
-  ClientHeight = 413
-  ClientWidth = 600
+  ClientHeight = 456
+  ClientWidth = 791
+  Menu = MainMenu1
   LCLVersion = '1.1'
-  object TreeView1: TTreeView
+  object tvOrgChart: TTreeView
     Left = 8
-    Height = 264
+    Height = 306
     Top = 8
-    Width = 475
+    Width = 650
+    Anchors = [akTop, akLeft, akRight, akBottom]
     DefaultItemHeight = 16
+    DragMode = dmAutomatic
     Images = ImageList1
+    ScrollBars = ssAutoVertical
     TabOrder = 0
-    OnClick = TreeView1Click
+    OnClick = tvOrgChartClick
+    OnDragOver = tvOrgChartDragOver
     Items.Data = {
       F9FFFFFF0200010000000000000000000000FFFFFFFFFFFFFFFF020000000000
       000001040000004F5520300000000000000000FFFFFFFFFFFFFFFF0200000000
@@ -29,26 +34,28 @@ object Form1: TForm1
     }
   end
   object bbAddChildOU: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 8
-    Width = 91
+    Width = 99
+    Anchors = [akTop, akRight]
     Caption = 'Add Child OU'
     OnClick = bbAddChildOUClick
     TabOrder = 1
   end
   object PageControl1: TPageControl
-    Left = 8
+    Left = 0
     Height = 125
-    Top = 280
-    Width = 577
+    Top = 331
+    Width = 791
     ActivePage = TabSheet1
+    Align = alBottom
     TabIndex = 0
     TabOrder = 2
     object TabSheet1: TTabSheet
       Caption = 'Object Properties'
       ClientHeight = 94
-      ClientWidth = 569
+      ClientWidth = 783
       object LabeledEdit1: TLabeledEdit
         Left = 76
         Height = 26
@@ -59,40 +66,80 @@ object Form1: TForm1
         EditLabel.AnchorSideRight.Control = LabeledEdit1
         EditLabel.AnchorSideBottom.Control = LabeledEdit1
         EditLabel.AnchorSideBottom.Side = asrBottom
-        EditLabel.Left = 42
+        EditLabel.Left = 45
         EditLabel.Height = 13
         EditLabel.Top = 20
-        EditLabel.Width = 31
-        EditLabel.Caption = 'Image'
+        EditLabel.Width = 28
+        EditLabel.Caption = 'Type:'
         EditLabel.ParentColor = False
         LabelPosition = lpLeft
         TabOrder = 0
-        Text = 'LabeledEdit1'
         OnDragOver = LabeledEdit1DragOver
+      end
+      object LabeledEdit2: TLabeledEdit
+        Left = 76
+        Height = 26
+        Top = 45
+        Width = 200
+        EditLabel.AnchorSideTop.Control = LabeledEdit2
+        EditLabel.AnchorSideTop.Side = asrCenter
+        EditLabel.AnchorSideRight.Control = LabeledEdit2
+        EditLabel.AnchorSideBottom.Control = LabeledEdit2
+        EditLabel.AnchorSideBottom.Side = asrBottom
+        EditLabel.Left = 22
+        EditLabel.Height = 13
+        EditLabel.Top = 52
+        EditLabel.Width = 51
+        EditLabel.Caption = 'Object ID:'
+        EditLabel.ParentColor = False
+        LabelPosition = lpLeft
+        TabOrder = 1
+        OnDragOver = LabeledEdit1DragOver
+      end
+      object CheckBox1: TCheckBox
+        Left = 291
+        Height = 22
+        Top = 17
+        Width = 158
+        Caption = 'Manages own Org. Unit'
+        OnChange = CheckBox1Change
+        TabOrder = 2
       end
     end
   end
   object bbAddPosition: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 40
-    Width = 91
+    Width = 99
+    Anchors = [akTop, akRight]
     Caption = 'Add Position'
     OnClick = bbAddPositionClick
     TabOrder = 3
   end
   object bbAddEmployee1: TBitBtn
-    Left = 488
+    Left = 677
     Height = 30
     Top = 72
-    Width = 91
+    Width = 99
+    Anchors = [akTop, akRight]
     Caption = 'Add Employee'
     OnClick = bbAddEmployee1Click
     TabOrder = 4
   end
+  object bbAddEmployee2: TBitBtn
+    Left = 677
+    Height = 30
+    Top = 104
+    Width = 99
+    Anchors = [akTop, akRight]
+    Caption = 'Delete Object'
+    OnClick = bbAddEmployee2Click
+    TabOrder = 5
+  end
   object ImageList1: TImageList
-    left = 517
-    top = 112
+    left = 488
+    top = 224
     Bitmap = {
       4C69040000001000000010000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -224,5 +271,50 @@ object Form1: TForm1
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00
     }
+  end
+  object MainMenu1: TMainMenu
+    left = 536
+    top = 224
+    object MenuItem1: TMenuItem
+      Caption = '&File'
+      OnClick = MenuItem1Click
+      object miImportSSL1000: TMenuItem
+        Caption = 'Import SSL 1000...'
+        OnClick = miImportSSL1000Click
+      end
+      object miImportSSL1001: TMenuItem
+        Caption = '&Import SSL 1001...'
+        Enabled = False
+        OnClick = miImportSSL1001Click
+      end
+      object miProcess: TMenuItem
+        Caption = 'Update Chart'
+        Enabled = False
+        OnClick = miProcessClick
+      end
+      object miExportTsv: TMenuItem
+        Caption = '&Export TSV...'
+        Enabled = False
+        OnClick = miExportTsvClick
+      end
+      object miExportDot: TMenuItem
+        Caption = 'Export DOT...'
+        Enabled = False
+        OnClick = miExportDotClick
+      end
+      object miExportHTML: TMenuItem
+        Caption = 'Export HTML...'
+        Enabled = False
+        OnClick = miExportHTMLClick
+      end
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    left = 504
+    top = 144
+  end
+  object SaveDialog1: TSaveDialog
+    left = 587
+    top = 153
   end
 end

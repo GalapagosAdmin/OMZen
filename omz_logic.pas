@@ -13,6 +13,11 @@ const
  IDX_POSITION = 1;
  IDX_CHIEF_POSITION = 2;
  IDX_EMPLOYEE = 3;
+ OBJ_ORG_UNIT = 'O';
+ OBJ_POSITION = 'S';
+ OBJ_JOB = 'C';
+ OBJ_COSTCTR = 'K';
+ OBJ_EMPLOYEE = 'P';
 
 type
   TRelationshipEntry=record
@@ -25,7 +30,7 @@ type
     DestObjType:Char;
     DestObjNum:LongInt;
     // Extra attributes for internal use
-    Stale:Boolean;
+   // Stale:Boolean;
   end;
 
   TObjectEntry=record
@@ -42,6 +47,7 @@ type
     ParentObjID:Longint;
     Stale:Boolean;
     Chief:Boolean;
+    Job:LongInt;
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -65,11 +71,12 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
 
 Procedure UpdateHasParent;
 
+Function DotStrip(const Original:UTF8String):UTF8String;
 
 
 implementation
 
-uses FileUtil,lazutf8, fgl, CharEncStreams, dbugintf;
+uses FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils;
 
 //class operator TRelationshipEntry.=(aLeft, aRight: TRelationshipEntry): Boolean;
 //begin
@@ -81,7 +88,27 @@ var
   HWMOUObjNum :LongInt;  // High Water Mark
   HWMPosObjNum :LongInt;
 
+Function DotStrip(const Original:UTF8String):UTF8String;
+  begin
+    Result := Original;
+    DelChars(Result, '/');
+    DelChars(Result, '(');
+    DelChars(Result, ')');
+    DelChars(Result, '&');
+  end;
 
+Procedure Init_number_ranges;
+// Set various high-water marks to number ranges
+  begin
+   HWMOUObjNum := 12200000; // Should be read from settings
+   HWMPosObjNum := 22200000; // Should be read from settings
+  end;
+
+Procedure Init_Lists;
+  begin
+   SetLength(ObjectList,0);
+   SetLength(RelationshipList,0);
+  end;
 
 Function GetNextOUObjNum:LongInt;
   begin
@@ -95,6 +122,7 @@ Function GetNextPosObjNum:LongInt;
      HWMPosObjNum := Result;
   end;
 
+// Flatten IT1001 into IT1000
 Procedure UpdateHasParent;
   var
     i,j:LongInt;
@@ -102,13 +130,13 @@ Procedure UpdateHasParent;
    for i := low(ObjectList) to high(ObjectList) do
      begin
      // Look for Org. Unit objects with no parent
-     If (not ObjectList[i].HasParent) and (ObjectList[i].ObjType = 'O') then
+     If (not ObjectList[i].HasParent) and (ObjectList[i].ObjType = OBJ_ORG_UNIT) then
        begin
          // Search for the parent
          for j := low(RelationshipList) to high(RelationshipList) do
            // Obj to Obj relationship
-           If (RelationshipList[j].SrcObjType = 'O')
-             and (RelationshipList[j].DestObjType = 'O')
+           If (RelationshipList[j].SrcObjType = OBJ_ORG_UNIT)
+             and (RelationshipList[j].DestObjType = OBJ_ORG_UNIT)
              and (RelationshipList[j].Relationship = 'A002')
              // Where the source is the current ObjectID
              and (RelationshipList[j].SrcObjNum = ObjectList[i].ObjNum )
@@ -120,13 +148,14 @@ Procedure UpdateHasParent;
                end;
          end; // if
      // Search for Positions w/o assignment to OU
-     If (not ObjectList[i].HasParent) and (ObjectList[i].ObjType = 'S') then
+     If (not ObjectList[i].HasParent)
+         and (ObjectList[i].ObjType = OBJ_POSITION) then
        begin
          // Search for the parent
          for j := low(RelationshipList) to high(RelationshipList) do
            // Obj to Obj relationship
-           If (RelationshipList[j].SrcObjType = 'S')
-             and (RelationshipList[j].DestObjType = 'O')
+           If (RelationshipList[j].SrcObjType = OBJ_POSITION)
+             and (RelationshipList[j].DestObjType = OBJ_ORG_UNIT)
              and ( (RelationshipList[j].Relationship = 'A003')   // Normal Reporting
                      or (RelationshipList[j].Relationship = 'A012') )  // Chief (Manager)
              // Where the source is the current ObjectID
@@ -214,6 +243,13 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                  end;
                1:begin // Object ID
                    LineBuffer.ObjNum:=StrToInt(Parser.CurrentCellText);
+                   // Update high water mark if necessary
+                   case LineBuffer.ObjType of
+                     OBJ_ORG_UNIT: if LineBuffer.ObjNum > HWMOUObjNum then
+                                       HWMOUObjNum := LineBuffer.ObjNum;
+                     OBJ_POSITION: if LineBuffer.ObjNum > HWMPosObjNum then
+                                       HWMPosObjNum := LineBuffer.ObjNum
+                   end;  // of CASE
                  end;
                2:begin // Begin Date
                    LineBuffer.BeginDate:=Parser.CurrentCellText;
@@ -227,7 +263,7 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                5:begin // Long Text Description
                    LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
                end;
-               6:Begin
+               6:Begin        // deleimit date?
                  end;
                7:Begin
                  LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
@@ -279,6 +315,9 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
     cRow, cCol:LongInt;
     RecordsLoaded:LongInt;
   begin
+   // Clear out high water marks
+   Init_number_ranges;
+   // Erase current items (we don't append)
    SetLength(RelationshipList,0);
    RecordsLoaded := 0;
    UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
@@ -353,13 +392,10 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
   end;
 
 
-initialization
-  // Set various high-water marks to number ranges
-  HWMOUObjNum := 12200000; // Should be read from settings
-  HWMPosObjNum := 22200000; // Should be read from settings
-  SetLength(ObjectList,0);
-  SetLength(RelationshipList,0);
 
+initialization
+  Init_Number_Ranges;
+  Init_Lists;
 
 end.
 

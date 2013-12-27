@@ -37,7 +37,7 @@ object Form1: TForm1
     Left = 677
     Height = 30
     Top = 8
-    Width = 91
+    Width = 99
     Anchors = [akTop, akRight]
     Caption = 'Add Child OU'
     OnClick = bbAddChildOUClick
@@ -111,7 +111,7 @@ object Form1: TForm1
     Left = 677
     Height = 30
     Top = 40
-    Width = 91
+    Width = 99
     Anchors = [akTop, akRight]
     Caption = 'Add Position'
     OnClick = bbAddPositionClick
@@ -121,7 +121,7 @@ object Form1: TForm1
     Left = 677
     Height = 30
     Top = 72
-    Width = 91
+    Width = 99
     Anchors = [akTop, akRight]
     Caption = 'Add Employee'
     OnClick = bbAddEmployee1Click
@@ -131,7 +131,7 @@ object Form1: TForm1
     Left = 677
     Height = 30
     Top = 104
-    Width = 91
+    Width = 99
     Anchors = [akTop, akRight]
     Caption = 'Delete Object'
     OnClick = bbAddEmployee2Click
@@ -278,25 +278,34 @@ object Form1: TForm1
     object MenuItem1: TMenuItem
       Caption = '&File'
       OnClick = MenuItem1Click
-      object MenuItem4: TMenuItem
+      object miImportSSL1000: TMenuItem
         Caption = 'Import SSL 1000...'
-        OnClick = MenuItem4Click
+        OnClick = miImportSSL1000Click
       end
-      object MenuItem2: TMenuItem
+      object miImportSSL1001: TMenuItem
         Caption = '&Import SSL 1001...'
-        OnClick = MenuItem2Click
+        Enabled = False
+        OnClick = miImportSSL1001Click
       end
       object miProcess: TMenuItem
         Caption = 'Update Chart'
+        Enabled = False
         OnClick = miProcessClick
       end
       object miExportTsv: TMenuItem
         Caption = '&Export TSV...'
+        Enabled = False
         OnClick = miExportTsvClick
       end
       object miExportDot: TMenuItem
         Caption = 'Export DOT...'
+        Enabled = False
         OnClick = miExportDotClick
+      end
+      object miExportHTML: TMenuItem
+        Caption = 'Export HTML...'
+        Enabled = False
+        OnClick = miExportHTMLClick
       end
     end
   end
