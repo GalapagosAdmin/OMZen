@@ -21,8 +21,12 @@ type
     ImageList1: TImageList;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
+    leCstCtr: TLabeledEdit;
+    leJobCd: TLabeledEdit;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    miAbout: TMenuItem;
     miImportSSL1001: TMenuItem;
     miExportHTML: TMenuItem;
     miExportTsv: TMenuItem;
@@ -31,7 +35,9 @@ type
     miProcess: TMenuItem;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
+    Panel1: TPanel;
     SaveDialog1: TSaveDialog;
+    StatusBar1: TStatusBar;
     TabSheet1: TTabSheet;
     tvOrgChart: TTreeView;
     procedure bbAddChildOUClick(Sender: TObject);
@@ -42,6 +48,8 @@ type
     procedure LabeledEdit1DragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
     procedure MenuItem1Click(Sender: TObject);
+    procedure MenuItem2Click(Sender: TObject);
+    procedure miAboutClick(Sender: TObject);
     procedure miImportSSL1001Click(Sender: TObject);
     procedure miExportHTMLClick(Sender: TObject);
     procedure miExportDotClick(Sender: TObject);
@@ -49,6 +57,7 @@ type
     procedure miImportSSL1000Click(Sender: TObject);
     procedure miProcessClick(Sender: TObject);
     procedure tvOrgChartClick(Sender: TObject);
+    procedure tvOrgChartDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
   private
@@ -166,6 +175,16 @@ end;
 procedure TForm1.MenuItem1Click(Sender: TObject);
 begin
 
+end;
+
+procedure TForm1.MenuItem2Click(Sender: TObject);
+begin
+
+end;
+
+procedure TForm1.miAboutClick(Sender: TObject);
+begin
+  showmessage('Org. Management Zen 1.0 by Noah Silva (c) 2013.');
 end;
 
 procedure TForm1.miImportSSL1001Click(Sender: TObject);
@@ -368,6 +387,8 @@ begin
   tvOrgChart.items.clear;
   // This transfers parent ID relationship from IT1001 to IT1000 structure.
   UpdateHasParent;
+  UpdateCstCtr;
+  UpdateJob;
  for h := 1 to MAX_DEPTH do // 10 rounds = max 10 levels org. chart heirarchy
    // Loop through all objects
    for i := low(ObjectList) to high(ObjectList) do
@@ -388,12 +409,19 @@ begin
 end;
 
 procedure TForm1.tvOrgChartClick(Sender: TObject);
+var
+  ObjID:LongInt;
+  ObjectEntry:TObjectEntry;
 begin
    if tvOrgChart.Selected <> nil then
     begin
+      ObjID:= Integer(tvOrgChart.Selected.Data);
       labelededit1.text := IntToStr(tvOrgChart.Selected.ImageIndex);
-      labelededit2.text := IntToStr(Integer(tvOrgChart.Selected.Data));
-
+      labelededit2.text := IntToStr(ObjID);
+      ObjectEntry := GetObjectById(ObjID);
+      leCstCtr.text := '';
+      leCstCtr.text := IntToStr(ObjectEntry.CostCtr);
+      leJobCd.text := '';
       Case tvOrgChart.Selected.ImageIndex of
         IDX_ORG_UNIT: begin  // Org. Unit
             bbAddChildOU.Enabled:=True;
@@ -402,6 +430,7 @@ begin
             labelededit1.text := 'Organizational Unit';
             CheckBox1.Checked:=False;
             CheckBox1.Enabled:=False;
+            leJobCd.text := 'N/A';
            end;
         IDX_POSITION: begin // Normal Position
              bbAddChildOU.Enabled:=False;
@@ -410,6 +439,7 @@ begin
              labelededit1.text := 'Position';
              CheckBox1.Enabled:=True;
              CheckBox1.Checked:=False;
+             leJobCd.text := IntToStr(ObjectEntry.Job);
            end;
         IDX_CHIEF_POSITION: begin // Chief Position
              bbAddChildOU.Enabled:= False;
@@ -418,6 +448,7 @@ begin
              labelededit1.text := 'Chief Position (Manager)';
              CheckBox1.Enabled:=True;
              CheckBox1.Checked:=True;
+             leJobCd.text := IntToStr(ObjectEntry.Job);
            end;
         IDX_EMPLOYEE: begin // Employee
              bbAddChildOU.Enabled:= False;
@@ -429,6 +460,30 @@ begin
            end;
       end; // of case
     end;
+end;
+
+procedure TForm1.tvOrgChartDragDrop(Sender, Source: TObject; X, Y: Integer);
+var
+  tv     : TTreeView;
+  iNode  : TTreeNode;
+begin
+  tv := TTreeView(Sender);      { Sender is TreeView where the data is being dropped  }
+  iNode := tv.GetNodeAt(x,y);   { x,y are drop coordinates (relative to the Sender)   }
+                                {   sinse Sender is TreeView we can evaluate          }
+                                {   a tree at the X,Y coordinates                     }
+
+  { TreeView can also be a Source! So we must make sure }
+  { that Source is TEdit, before getting its text }
+  if Source = Sender then begin         { drop is happening within a TreeView   }
+    if Assigned(tv.Selected) and             {  check if any node has been selected  }
+      (iNode <> tv.Selected) then            {   and we're droping to another node   }
+    begin
+      if iNode <> nil then
+        tv.Selected.MoveTo(iNode, naAddChild) { complete the drop operation, by moving the selectede node }
+      else
+        tv.Selected.MoveTo(iNode, naAdd); { complete the drop operation, by moving in root of a TreeView }
+    end;
+  end;
 end;
 
 procedure TForm1.tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;

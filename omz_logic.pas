@@ -48,6 +48,7 @@ type
     Stale:Boolean;
     Chief:Boolean;
     Job:LongInt;
+    CostCtr:LongInt;
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -70,6 +71,9 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
 // by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
 
 Procedure UpdateHasParent;
+Procedure UpdateCstCtr;
+Procedure UpdateJob;
+Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
 
@@ -169,6 +173,75 @@ Procedure UpdateHasParent;
                    Chief := True;
                end;
        end;
+    end; // for
+  end; // of Procedure
+
+Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
+  var
+    i:longint;
+  begin
+   for i := low(ObjectList) to high(ObjectList) do
+     if  ObjectList[i].ObjNum = ObjID then
+     begin
+       result := ObjectList[i];
+       exit;
+     end;
+    result.costctr := 0;
+  end;
+
+Procedure UpdateCstCtr;
+  var
+    i,j:LongInt;
+  begin
+   for i := low(ObjectList) to high(ObjectList) do
+     begin
+      // put filter criteria here
+       begin
+         // Search for the parent
+         for j := low(RelationshipList) to high(RelationshipList) do
+           // Obj to Obj relationship
+           If (RelationshipList[j].SrcObjType <> OBJ_COSTCTR)
+            and (RelationshipList[j].DestObjType = OBJ_COSTCTR)
+//             and (RelationshipList[j].Relationship = 'A002')
+             // Where the source is the current ObjectID
+             and (RelationshipList[j].SrcObjNum = ObjectList[i].ObjNum )
+             // If so, then we have a parent ID, so we set HasParent to True.
+             then
+               with ObjectList[i] do begin
+         //        HasParent := True;
+                 CostCtr := RelationshipList[j].DestObjNum;
+               end;
+         end; // if
+
+    end; // for
+  end; // of Procedure
+
+
+Procedure UpdateJob;
+  var
+    i,j:LongInt;
+  begin
+   for i := low(ObjectList) to high(ObjectList) do
+     begin
+      // put filter criteria here
+       If (ObjectList[i].ObjType = OBJ_POSITION) then
+       begin
+         // Search for the parent
+         for j := low(RelationshipList) to high(RelationshipList) do
+           // Obj to Obj relationship
+           If (RelationshipList[j].SrcObjType = OBJ_POSITION)
+            and (RelationshipList[j].DestObjType = OBJ_JOB)
+//             and (RelationshipList[j].Relationship = 'A002')
+             // Where the source is the current ObjectID
+             and (RelationshipList[j].SrcObjNum = ObjectList[i].ObjNum )
+             // If so, then we have a parent ID, so we set HasParent to True.
+             then
+               with ObjectList[i] do begin
+         //        HasParent := True;
+                 Job := RelationshipList[j].DestObjNum;
+               end;
+         end; // if
+
     end; // for
   end; // of Procedure
 
