@@ -47,8 +47,8 @@ type
     ParentObjID:Longint;
     Stale:Boolean;
     Chief:Boolean;
-    Job:LongInt;
-    CostCtr:LongInt;
+    Job:LongInt;  // Job Code for Position
+    CostCtr:LongInt; // Cost Center for Position or Org. Unit
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -70,10 +70,23 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
 // Imports the H1001 sheet of an OM SSL file, which has been exported from Excel
 // by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
 
+Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
+// Imports NHIRE (Hire Action) Sheet, which has been exported from Excel
+// by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
+
+Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
+// Imports NHIRE (Hire Action) Sheet, which has been exported from Excel
+// by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
+
+
 Procedure UpdateHasParent;
 Procedure UpdateCstCtr;
 Procedure UpdateJob;
+Procedure UpdateEE; // Update after loading NHIRE
+
 Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
+Function GetObjectLongTextByID(Const ObjID:LongInt):UTF8String;
+Function GetObjectShortTextByID(Const ObjID:LongInt):UTF8String;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
 
@@ -89,8 +102,10 @@ uses FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils;
 
 
 var
-  HWMOUObjNum :LongInt;  // High Water Mark
+  HWMOUObjNum  :LongInt;  // High Water Mark
   HWMPosObjNum :LongInt;
+  HWMEEObjNum  :LongInt;
+  HWMCCObjNum  :LongInt;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
   begin
@@ -104,8 +119,10 @@ Function DotStrip(const Original:UTF8String):UTF8String;
 Procedure Init_number_ranges;
 // Set various high-water marks to number ranges
   begin
-   HWMOUObjNum := 12200000; // Should be read from settings
+   HWMOUObjNum :=  12200000; // Should be read from settings
    HWMPosObjNum := 22200000; // Should be read from settings
+   HWMEEObjNum :=  22600000; // Should be read from settings
+   HWMCCObjNum :=  9990000000; // Should be read from settings
   end;
 
 Procedure Init_Lists;
@@ -124,6 +141,20 @@ Function GetNextPosObjNum:LongInt;
   begin
      Result := HWMPosObjNum + 1;
      HWMPosObjNum := Result;
+  end;
+
+Function GetNextEEObjNum:LongInt;
+  begin
+     Result := HWMEEObjNum + 1;
+     HWMEEObjNum := Result;
+  end;
+
+
+Procedure UpdateEE;
+    var
+      i,j:LongInt;
+  begin
+     // ParentObjID is loaded when the NHIRE file is loaded.
   end;
 
 // Flatten IT1001 into IT1000
@@ -188,6 +219,25 @@ Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
      end;
     result.costctr := 0;
   end;
+
+Function GetObjectLongTextByID(Const ObjID:LongInt):UTF8String;
+  var
+    Obj:TObjectEntry;
+  begin
+     result := '';
+     Obj := GetObjectById(ObjID);
+     Result := Obj.LongText;
+  end;
+
+Function GetObjectShortTextByID(Const ObjID:LongInt):UTF8String;
+  var
+    Obj:TObjectEntry;
+  begin
+     result := '';
+     Obj := GetObjectById(ObjID);
+     Result := Obj.ShortText;
+  end;
+
 
 Procedure UpdateCstCtr;
   var
@@ -311,6 +361,8 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
 
              case Parser.CurrentCol of
                0:begin // Object Type
+                   FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
+                   //LineBuffer := Default(TObjectEntry);
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.ObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
@@ -412,6 +464,7 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
 
              case Parser.CurrentCol of
                0:begin // Source Object Type
+                   FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.SrcObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
@@ -462,8 +515,211 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
        SendDebug('Warning: Unable to delete temporary UTF8 file.');
    end;
 
-  end;
+  end;    // PROCEDURE Import_ADP_HRP1001
 
+
+Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
+// Important columns
+// 16 Position
+// 26 - 27 Romaji name
+// 22-23 Kanji Name
+// 70 last column
+    var
+      UTF8FileName:UTF8String;
+      FileStream: TFileStream;
+      Parser: TCSVParser;
+      ADelimiter:Char=#9; // Tab?
+      LineBuffer:TObjectEntry;
+      tmpString :String;
+      cRow, cCol:LongInt;
+      RecordsLoaded:LongInt;
+    begin
+//     SetLength(ObjectList,0);
+     RecordsLoaded := 0;
+     UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
+     if not(FileExistsUTF8(UTF8FileName)) then exit;
+     Parser:=TCSVParser.Create;
+     FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename), fmOpenRead+fmShareDenyWrite);
+     try
+      Parser.Delimiter:=ADelimiter;
+      Parser.SetSource(FileStream);
+       while Parser.ParseNextCell do
+         begin
+           cRow := Parser.CurrentRow;
+           cCol := Parser.CurrentCol;
+          Case Parser.CurrentRow of
+           0,1,2:; // Skip header rows
+           else // Data starts from row 3 (zero based)
+             begin
+              tmpString := Parser.CurrentCellText;
+
+               case Parser.CurrentCol of
+                // 0 Employee ID
+                 0:begin // Object Type / Object ID
+                    FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
+                    If length(Parser.CurrentCellText) > 0 then
+                       begin
+                         LineBuffer.ObjType:=OBJ_EMPLOYEE;
+                         LineBuffer.ObjNum :=StrToInt(Parser.CurrentCellText);
+                         // Update high water mark if necessary
+                         if LineBuffer.ObjNum > HWMEEObjNum then
+                           HWMEEObjNum := LineBuffer.ObjNum;
+                       end;
+                     end; // Case Col 0
+                 1:begin // Begin Date
+                     LineBuffer.BeginDate:=Parser.CurrentCellText;
+                   end;
+                 2:begin // End Date
+                     LineBuffer.EndDate:=Parser.CurrentCellText;
+                   end;
+                 16:begin //
+                     LineBuffer.ParentObjID :=StrToInt(Parser.CurrentCellText);
+                   end;
+                 22:begin // Kanji Family Name
+                      LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
+                    end;
+                 23:Begin // Kanji given name
+                      LineBuffer.ShortText :=  LineBuffer.ShortText + ' '+ Parser.CurrentCellText;
+                      LineBuffer.ShortText := UTF8Copy(LineBuffer.ShortText,1,12);
+                    end;
+                 26:begin // Romaji name
+                      LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
+                   end;
+                 27:begin // Romaji Name
+                   LineBuffer.LongText := LineBuffer.LongText + ' ' + Parser.CurrentCellText;
+                   LineBuffer.LongText := UTF8Copy(LineBuffer.LongText,1,40);
+                 end;
+                 48:Begin  // IT0041 Date 01 - last used field
+//                   LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
+                   LineBuffer.HasParent :=  (LineBuffer.ParentObjID <> 99999999);
+                   LineBuffer.Stale := True;
+                   LineBuffer.Chief := False;
+//                   LineBuffer.ParentObjID := 0;
+                   Inc(RecordsLoaded);
+                   SetLength(ObjectList,Length(ObjectList)+1);
+                   SendDebug(LineBuffer.ObjType
+                             + IntToStr(LineBuffer.ObjNum)
+                             + LineBuffer.BeginDate
+                             + LineBuffer.EndDate
+                             + LineBuffer.ShortText
+                             + LineBuffer.LongText
+                             + LineBuffer.LangCode
+                             );
+                   ObjectList[High(ObjectList)] := LineBuffer;
+
+                   end;
+               end; // of CASE CurrentCol
+             end;// row >= 3
+          end; // of CASE CurrentRow
+        // Set Array text
+        //:=Parser.CurrentCellText;
+        end;
+       SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+
+
+     finally
+       Parser.Free;
+       FileStream.Free;
+       If not DeleteFileUTF8(UTF8FileName) then
+         SendDebug('Warning: Unable to delete temporary UTF8 file.');
+     end;
+
+    end;
+
+
+// Cost Center SSL file
+Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
+// Important columns
+// 0 language
+// 1 controlling area
+// 2 Cost Center
+// 3 Company Code
+// 4 Short Text
+// 5 Long Text
+    var
+      UTF8FileName:UTF8String;
+      FileStream: TFileStream;
+      Parser: TCSVParser;
+      ADelimiter:Char=#9; // Tab?
+      LineBuffer:TObjectEntry;
+      tmpString :String;
+      cRow, cCol:LongInt;
+      RecordsLoaded:LongInt;
+    begin
+//     SetLength(ObjectList,0);
+     RecordsLoaded := 0;
+     UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
+     if not(FileExistsUTF8(UTF8FileName)) then exit;
+     Parser:=TCSVParser.Create;
+     FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename), fmOpenRead+fmShareDenyWrite);
+     try
+      Parser.Delimiter:=ADelimiter;
+      Parser.SetSource(FileStream);
+       while Parser.ParseNextCell do
+         begin
+           cRow := Parser.CurrentRow;
+           cCol := Parser.CurrentCol;
+          Case Parser.CurrentRow of
+           0,1,2:; // Skip header rows
+           else // Data starts from row 3 (zero based)
+             begin
+              tmpString := Parser.CurrentCellText;
+               case Parser.CurrentCol of
+                // 0 Employee ID
+                 0:begin // Language Code
+                     FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
+                     LineBuffer.LangCode  :=Parser.CurrentCellText;
+                   end;
+                 1:begin // Controlling Area
+                   end;
+                 2:begin // Object Type / Object ID (Cost Center Code)
+                     If length(Parser.CurrentCellText) > 0 then
+                       begin
+                         LineBuffer.ObjType:=OBJ_COSTCTR;
+                         LineBuffer.ObjNum :=StrToInt(Parser.CurrentCellText);
+                         // Update high water mark if necessary
+                         if LineBuffer.ObjNum > HWMCCObjNum then
+                           HWMCCObjNum := LineBuffer.ObjNum;
+                       end;
+                     end; // Case Col 0
+                 4:begin // Short Text Description
+                      LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
+                   end;
+                 5:Begin  // IT0041 Date 01 - last used field
+                   LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
+//                   LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
+                   LineBuffer.HasParent :=  false; // No parents for CC
+                   LineBuffer.Stale := False; // Cost Centers not shown in GUI
+                   LineBuffer.Chief := False; // Chief is only relevant to positions
+//                   LineBuffer.ParentObjID := 0;
+                   Inc(RecordsLoaded);
+                   SetLength(ObjectList,Length(ObjectList)+1);
+                   SendDebug(LineBuffer.ObjType
+                             + IntToStr(LineBuffer.ObjNum)
+                             + LineBuffer.ShortText
+                             + LineBuffer.LongText
+                             + LineBuffer.LangCode
+                             );
+                   ObjectList[High(ObjectList)] := LineBuffer;
+
+                   end;
+               end; // of CASE CurrentCol
+             end;// row >= 3
+          end; // of CASE CurrentRow
+        // Set Array text
+        //:=Parser.CurrentCellText;
+        end;
+       SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+
+
+     finally
+       Parser.Free;
+       FileStream.Free;
+       If not DeleteFileUTF8(UTF8FileName) then
+         SendDebug('Warning: Unable to delete temporary UTF8 file.');
+     end;
+
+    end;
 
 
 initialization

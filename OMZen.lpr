@@ -7,8 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, omz_main, omz_logic, charencstreams, CsvDocument
-  { you can add units after this };
+  Forms, omz_main, omz_logic, charencstreams, CsvDocument, omz_rsrc;
 
 {$R *.res}
 

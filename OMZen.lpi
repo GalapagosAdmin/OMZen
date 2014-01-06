@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="6">
       <Unit0>
         <Filename Value="OMZen.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -64,6 +64,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="charencstreams"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="omz_rsrc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="omz_rsrc"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
