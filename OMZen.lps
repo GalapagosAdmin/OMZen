@@ -9,7 +9,12 @@
         <Filename Value="OMZen.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="OMZen"/>
-        <UsageCount Value="64"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="47" Y="13"/>
+        <UsageCount Value="65"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="omz_main.pas"/>
@@ -18,11 +23,12 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="omz_main"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="251"/>
-        <CursorPos X="12" Y="256"/>
-        <UsageCount Value="64"/>
+        <TopLine Value="98"/>
+        <CursorPos X="1" Y="98"/>
+        <UsageCount Value="65"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -30,69 +36,68 @@
         <Filename Value="omz_logic.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="omz_logic"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="563"/>
-        <CursorPos X="29" Y="717"/>
-        <UsageCount Value="64"/>
+        <TopLine Value="34"/>
+        <CursorPos X="14" Y="52"/>
+        <UsageCount Value="65"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="csvdocument\csvdocument.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="CsvDocument"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="429"/>
         <CursorPos X="1" Y="454"/>
-        <UsageCount Value="62"/>
+        <UsageCount Value="63"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="utf8tools\charencstreams.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="charencstreams"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="57"/>
         <CursorPos X="1" Y="71"/>
-        <UsageCount Value="59"/>
+        <UsageCount Value="60"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
+        <Filename Value="omz_rsrc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="omz_rsrc"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="7"/>
+        <CursorPos X="54" Y="19"/>
+        <UsageCount Value="31"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
         <Filename Value="C:\lazarus\components\lazutils\fileutil.pas"/>
         <UnitName Value="FileUtil"/>
         <WindowIndex Value="0"/>
         <TopLine Value="203"/>
         <CursorPos X="1" Y="221"/>
         <UsageCount Value="24"/>
-      </Unit5>
-      <Unit6>
+      </Unit6>
+      <Unit7>
         <Filename Value="C:\lazarus\components\lazutils\fileutil.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="688"/>
         <CursorPos X="10" Y="688"/>
         <UsageCount Value="24"/>
-      </Unit6>
-      <Unit7>
+      </Unit7>
+      <Unit8>
         <Filename Value="C:\lazarus\components\lazutils\lazutf8.pas"/>
         <UnitName Value="LazUTF8"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="21" Y="1"/>
         <UsageCount Value="24"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="omz_rsrc.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="omz_rsrc"/>
-        <EditorIndex Value="2"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="7"/>
-        <CursorPos X="54" Y="19"/>
-        <UsageCount Value="30"/>
-        <Loaded Value="True"/>
       </Unit8>
       <Unit9>
         <Filename Value="C:\lazarus\lcl\include\treeview.inc"/>
@@ -108,124 +113,135 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="356" Column="1" TopLine="350"/>
+        <Caret Line="345" Column="39" TopLine="336"/>
       </Position1>
       <Position2>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="345" Column="39" TopLine="336"/>
+        <Caret Line="536" Column="42" TopLine="524"/>
       </Position2>
       <Position3>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="536" Column="42" TopLine="524"/>
+        <Caret Line="543" Column="42" TopLine="531"/>
       </Position3>
       <Position4>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="543" Column="42" TopLine="531"/>
+        <Caret Line="199" Column="3" TopLine="197"/>
       </Position4>
       <Position5>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="199" Column="3" TopLine="197"/>
+        <Caret Line="365" Column="38" TopLine="357"/>
       </Position5>
       <Position6>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="365" Column="38" TopLine="357"/>
+        <Caret Line="247" Column="1" TopLine="233"/>
       </Position6>
       <Position7>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="247" Column="1" TopLine="233"/>
+        <Caret Line="202" Column="1" TopLine="197"/>
       </Position7>
       <Position8>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="202" Column="1" TopLine="197"/>
+        <Caret Line="178" Column="3" TopLine="172"/>
       </Position8>
       <Position9>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="178" Column="3" TopLine="172"/>
+        <Caret Line="318" Column="3" TopLine="299"/>
       </Position9>
       <Position10>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="318" Column="3" TopLine="299"/>
+        <Caret Line="200" Column="13" TopLine="197"/>
       </Position10>
       <Position11>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="200" Column="13" TopLine="197"/>
+        <Caret Line="515" Column="1" TopLine="500"/>
       </Position11>
       <Position12>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="515" Column="1" TopLine="500"/>
+        <Caret Line="209" Column="39" TopLine="197"/>
       </Position12>
       <Position13>
-        <Filename Value="omz_main.pas"/>
-        <Caret Line="209" Column="39" TopLine="197"/>
-      </Position13>
-      <Position14>
         <Filename Value="omz_logic.pas"/>
         <Caret Line="23" Column="14" TopLine="11"/>
+      </Position13>
+      <Position14>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="240" Column="26" TopLine="233"/>
       </Position14>
       <Position15>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="240" Column="26" TopLine="233"/>
+        <Caret Line="235" Column="22" TopLine="225"/>
       </Position15>
       <Position16>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="235" Column="22" TopLine="225"/>
+        <Caret Line="229" Column="35" TopLine="210"/>
       </Position16>
       <Position17>
-        <Filename Value="omz_main.pas"/>
-        <Caret Line="229" Column="35" TopLine="210"/>
+        <Filename Value="omz_logic.pas"/>
+        <Caret Line="38" Column="16" TopLine="32"/>
       </Position17>
       <Position18>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="38" Column="16" TopLine="32"/>
+        <Caret Line="66" Column="17" TopLine="49"/>
       </Position18>
       <Position19>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="66" Column="17" TopLine="49"/>
+        <Caret Line="67" Column="10" TopLine="50"/>
       </Position19>
       <Position20>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="67" Column="10" TopLine="50"/>
+        <Caret Line="69" Column="17" TopLine="52"/>
       </Position20>
       <Position21>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="69" Column="17" TopLine="52"/>
+        <Caret Line="70" Column="10" TopLine="53"/>
       </Position21>
       <Position22>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="70" Column="10" TopLine="53"/>
+        <Caret Line="73" Column="17" TopLine="56"/>
       </Position22>
       <Position23>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="73" Column="17" TopLine="56"/>
+        <Caret Line="74" Column="10" TopLine="57"/>
       </Position23>
       <Position24>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="74" Column="10" TopLine="57"/>
+        <Caret Line="77" Column="17" TopLine="60"/>
       </Position24>
       <Position25>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="77" Column="17" TopLine="60"/>
+        <Caret Line="78" Column="10" TopLine="61"/>
       </Position25>
       <Position26>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="78" Column="10" TopLine="61"/>
+        <Caret Line="332" Column="17" TopLine="315"/>
       </Position26>
       <Position27>
         <Filename Value="omz_logic.pas"/>
-        <Caret Line="332" Column="17" TopLine="315"/>
+        <Caret Line="364" Column="54" TopLine="361"/>
       </Position27>
       <Position28>
-        <Filename Value="omz_logic.pas"/>
-        <Caret Line="364" Column="54" TopLine="361"/>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="223" Column="1" TopLine="216"/>
       </Position28>
       <Position29>
         <Filename Value="omz_main.pas"/>
-        <Caret Line="223" Column="1" TopLine="216"/>
+        <Caret Line="271" Column="18" TopLine="261"/>
       </Position29>
       <Position30>
-        <Filename Value="omz_main.pas"/>
-        <Caret Line="271" Column="18" TopLine="261"/>
+        <Filename Value="OMZen.lpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
+  <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="omz_logic.pas"/>
+        <Line Value="605"/>
+      </Item1>
+    </BreakPoints>
+  </Debugging>
 </CONFIG>

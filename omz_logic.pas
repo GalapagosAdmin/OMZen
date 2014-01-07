@@ -18,6 +18,36 @@ const
  OBJ_JOB = 'C';
  OBJ_COSTCTR = 'K';
  OBJ_EMPLOYEE = 'P';
+// Column number constants to convert from spreadsheet view to CSVfile column number.
+ COL_A = 0;
+ COL_B = 1;
+ COL_C = 2;
+ COL_D = 3;
+ COL_E = 4;
+ COL_F = 5;
+ COL_G = 6;
+ COL_H = 7;
+ COL_I = 8;
+ COL_J = 9;
+ COL_K = 10;
+ COL_L = 11;
+ COL_M = 12;
+ COL_N = 13;
+ COL_O = 14;
+ COL_P = 15;
+ COL_Q = 16;
+ COL_R = 17;
+ COL_S = 18;
+ COL_T = 19;
+ COL_U = 20;
+ COL_V = 21;
+ COL_W = 22;
+ COL_X = 23;
+ COL_Y = 24;
+ COL_Z = 25;
+ COL_AA = 26;
+ COL_AB = 27;
+ COL_AW = 48;
 
 type
   TRelationshipEntry=record
@@ -360,13 +390,13 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
             tmpString := Parser.CurrentCellText;
 
              case Parser.CurrentCol of
-               0:begin // Object Type
+               COL_A:begin // Object Type
                    FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
                    //LineBuffer := Default(TObjectEntry);
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.ObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
-               1:begin // Object ID
+               COL_B:begin // Object ID
                    LineBuffer.ObjNum:=StrToInt(Parser.CurrentCellText);
                    // Update high water mark if necessary
                    case LineBuffer.ObjType of
@@ -376,21 +406,21 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                                        HWMPosObjNum := LineBuffer.ObjNum
                    end;  // of CASE
                  end;
-               2:begin // Begin Date
+               COL_C:begin // Begin Date
                    LineBuffer.BeginDate:=Parser.CurrentCellText;
                  end;
-               3:begin // End Date
+               COL_D:begin // End Date
                    LineBuffer.EndDate:=Parser.CurrentCellText;
                  end;
-               4:begin // Short Text Description
+               COL_E:begin // Short Text Description
                     LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
                  end;
-               5:begin // Long Text Description
+               COL_F:begin // Long Text Description
                    LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
                end;
-               6:Begin        // deleimit date?
+               COL_G:Begin        // deleimit date?
                  end;
-               7:Begin
+               COL_H:Begin
                  LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
                  LineBuffer.HasParent := False;
                  LineBuffer.Stale := True;
@@ -463,29 +493,29 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
             tmpString := Parser.CurrentCellText;
 
              case Parser.CurrentCol of
-               0:begin // Source Object Type
+               COL_A:begin // Source Object Type
                    FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.SrcObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
-               1:begin // Source Object ID
+               COL_B:begin // Source Object ID
 
                    LineBuffer.SrcObjNum:=StrToInt(Parser.CurrentCellText);
                  end;
-               2:begin // Relationship Direction + code
+               COL_C:begin // Relationship Direction + code
                    LineBuffer.Relationship:=Parser.CurrentCellText;
                  end;
-               3:begin // Begin Date
+               COL_D:begin // Begin Date
                    LineBuffer.BeginDate:=Parser.CurrentCellText;
                  end;
-               4:begin // End Date
+               COL_E:begin // End Date
                    LineBuffer.EndDate:=Parser.CurrentCellText;
                  end;
-               5:begin // Destination Object Type
+               COL_F:begin // Destination Object Type
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.DestObjType := Parser.CurrentCellText[1];
                  end;
-               6:begin // Destination Object Number
+               COL_G:begin // Destination Object Number
                    LineBuffer.DestObjNum := StrToInt(Parser.CurrentCellText);
                    Inc(RecordsLoaded);
                    SetLength(RelationshipList,RecordsLoaded);
@@ -555,7 +585,7 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
 
                case Parser.CurrentCol of
                 // 0 Employee ID
-                 0:begin // Object Type / Object ID
+                 COL_A:begin // Object Type / Object ID
                     FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
                     If length(Parser.CurrentCellText) > 0 then
                        begin
@@ -566,30 +596,30 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
                            HWMEEObjNum := LineBuffer.ObjNum;
                        end;
                      end; // Case Col 0
-                 1:begin // Begin Date
+                 COL_B:begin // Begin Date
                      LineBuffer.BeginDate:=Parser.CurrentCellText;
                    end;
-                 2:begin // End Date
+                 COL_C:begin // End Date
                      LineBuffer.EndDate:=Parser.CurrentCellText;
                    end;
-                 16:begin //
+                 COL_Q:begin // Position
                      LineBuffer.ParentObjID :=StrToInt(Parser.CurrentCellText);
                    end;
-                 22:begin // Kanji Family Name
+                 COL_W:begin // Kanji Family Name
                       LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
                     end;
-                 23:Begin // Kanji given name
+                 COL_X:Begin // Kanji given name
                       LineBuffer.ShortText :=  LineBuffer.ShortText + ' '+ Parser.CurrentCellText;
                       LineBuffer.ShortText := UTF8Copy(LineBuffer.ShortText,1,12);
                     end;
-                 26:begin // Romaji name
+                 COL_AA:begin // Romaji name
                       LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
                    end;
-                 27:begin // Romaji Name
+                 COL_AB:begin // Romaji Name
                    LineBuffer.LongText := LineBuffer.LongText + ' ' + Parser.CurrentCellText;
                    LineBuffer.LongText := UTF8Copy(LineBuffer.LongText,1,40);
                  end;
-                 48:Begin  // IT0041 Date 01 - last used field
+                 COL_AW:Begin  // IT0041 Date 01 - last used field
 //                   LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
                    LineBuffer.HasParent :=  (LineBuffer.ParentObjID <> 99999999);
                    LineBuffer.Stale := True;
@@ -666,13 +696,13 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
               tmpString := Parser.CurrentCellText;
                case Parser.CurrentCol of
                 // 0 Employee ID
-                 0:begin // Language Code
+                 COL_A:begin // Language Code
                      FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
                      LineBuffer.LangCode  :=Parser.CurrentCellText;
                    end;
-                 1:begin // Controlling Area
+                 COL_B:begin // Controlling Area
                    end;
-                 2:begin // Object Type / Object ID (Cost Center Code)
+                 COL_C:begin // Object Type / Object ID (Cost Center Code)
                      If length(Parser.CurrentCellText) > 0 then
                        begin
                          LineBuffer.ObjType:=OBJ_COSTCTR;
@@ -682,10 +712,10 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
                            HWMCCObjNum := LineBuffer.ObjNum;
                        end;
                      end; // Case Col 0
-                 4:begin // Short Text Description
+                 COL_D:begin // Short Text Description
                       LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
                    end;
-                 5:Begin  // IT0041 Date 01 - last used field
+                 COL_E:Begin  // IT0041 Date 01 - last used field
                    LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
 //                   LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
                    LineBuffer.HasParent :=  false; // No parents for CC

@@ -217,16 +217,17 @@ if SaveDialog1.Execute then
              + sep + 'Kanji Name'
              + sep + 'Romaji Name'
              + sep + 'Position No.'
-             + Sep + 'Position Text'
+             + Sep + 'Pos. Text(S)'
+             + Sep + 'Pos. Text(L)'
              + Sep + 'Job No.'
              + sep + 'Job Text'
              + sep + 'Manager'
-             + sep + 'OU1 No.'
-             + sep + 'OU1 Text'
-             + sep + 'OU2 No.'
-             + sep + 'OU2 Text'
              + sep + 'OU3 No.'
              + sep + 'OU3 Text'
+             + sep + 'OU2 No.'
+             + sep + 'OU2 Text'
+             + sep + 'OU1 No.'
+             + sep + 'OU1 Text'
              + sep + 'Eff. CC No.'
              + sep + 'Eff. CC Text'
 
@@ -257,7 +258,7 @@ if SaveDialog1.Execute then
      if PosObj.CostCtr <> 0 then
       Kostl := PosObj.CostCtr;
 
-     If PosObj.Chief then ChiefFlag := 'True' else ChiefFlag := 'False';
+     If PosObj.Chief then ChiefFlag := 'Yes' else ChiefFlag := 'No';
 
      Outline := IntToStr(eeObj.ObjNum)
                  + sep
@@ -268,14 +269,15 @@ if SaveDialog1.Execute then
                  + IntToStr(eeObj.ParentObjID)
                  + Sep + PosObj.LongText
                  + Sep + IntToStr(PosObj.Job)
+                 + sep + GetObjectShortTextByID(PosObj.Job)
                  + sep + GetObjectLongTextByID(PosObj.Job)
                  + sep + ChiefFlag
-                 + sep + IntToStr(ou1.ObjNum)
-                 + sep + ou1.LongText
-                 + sep + IntToStr(ou2.ObjNum)
-                 + sep + ou2.LongText
                  + sep + IntToStr(ou3.ObjNum)
                  + sep + ou3.LongText
+                 + sep + IntToStr(ou2.ObjNum)
+                 + sep + ou2.LongText
+                 + sep + IntToStr(ou1.ObjNum)
+                 + sep + ou1.LongText
                  + sep + IntToStr(kostl)
                  + sep + GetObjectLongTextByID(kostl)
                  ;
