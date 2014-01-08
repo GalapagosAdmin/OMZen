@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="OMZen.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -69,6 +69,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="omz_rsrc"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="omz_console.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmConsole"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="omz_console"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

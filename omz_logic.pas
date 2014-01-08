@@ -50,22 +50,28 @@ const
  COL_AW = 48;
 
 type
+  // We need 64 bit to cover some long cost centers.
+  TObjID=int64;
+
   TRelationshipEntry=record
     // Standard SAP attributes
     SrcObjType:Char;
-    SrcObjNum:LongInt;
+    SrcObjNum:TObjID;
     Relationship:String[4];
     BeginDate:String[10];
     EndDate:String[10];
     DestObjType:Char;
-    DestObjNum:LongInt;
+    DestObjNum:TObjID;
     // Extra attributes for internal use
    // Stale:Boolean;
+    Used:Boolean;
+    SrcObjIdx:LongInt;  // Index into Object Array
+    DestObjIdx:LongInt; // Index into Object Array
   end;
 
   TObjectEntry=record
     ObjType:Char;
-    ObjNum:LongInt;
+    ObjNum:TObjID;
     BeginDate:String[10];
     EndDate:String[10];
     ShortText:String[24];
@@ -74,11 +80,12 @@ type
     LangCode:String[2];
     // Extra attributes for internal use
     HasParent:Boolean;
-    ParentObjID:Longint;
+    ParentObjID:TObjID;
     Stale:Boolean;
     Chief:Boolean;
-    Job:LongInt;  // Job Code for Position
-    CostCtr:LongInt; // Cost Center for Position or Org. Unit
+    Job:TObjID;  // Job Code for Position
+    CostCtr:TObjID; // Cost Center for Position or Org. Unit
+    Used:Boolean;
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -91,6 +98,7 @@ var
   RelationshipList:TRelationshipList;
   ObjectList:TObjectList;
 
+Function EmptyObj:TObjectEntry;
 Function GetNextOUObjNum:LongInt;
 Function GetNextPosObjNum:LongInt;
 Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
@@ -105,7 +113,7 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
 // by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
 
 Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
-// Imports NHIRE (Hire Action) Sheet, which has been exported from Excel
+// Imports CCRMD (Cost Center Master Data) Sheet, which has been exported from Excel
 // by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
 
 
@@ -114,12 +122,21 @@ Procedure UpdateCstCtr;
 Procedure UpdateJob;
 Procedure UpdateEE; // Update after loading NHIRE
 
-Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
-Function GetObjectLongTextByID(Const ObjID:LongInt):UTF8String;
-Function GetObjectShortTextByID(Const ObjID:LongInt):UTF8String;
+Function GetObjectById(Const ObjID:TObjID):TObjectEntry;
+Function GetObjectIdxById(Const ObjID:TObjID):LongInt;
+Function GetObjectLongTextByID(Const ObjID:TObjID):UTF8String;
+Function GetObjectShortTextByID(Const ObjID:TObjID):UTF8String;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
+Procedure UnusedObjectReport(StringList:TStrings);
 
+Function ObjIDToStr(const OBJID:TObjID):UTF8String;
+
+
+// This builds an index to for the objext list array for faster access when
+// using relationships.
+// This should be called after all files are loaded, before any other processing.
+Procedure IndexRelations;
 
 implementation
 
@@ -136,6 +153,16 @@ var
   HWMPosObjNum :LongInt;
   HWMEEObjNum  :LongInt;
   HWMCCObjNum  :LongInt;
+
+Function ObjIDToStr(const ObjID:TObjID):UTF8String;
+  begin
+    if ObjID = 0 then
+      result := '' // This just means it wasn't set, so use blank
+    else
+      begin
+        Result := IntToStr(ObjID);
+      end;
+  end;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
   begin
@@ -179,7 +206,6 @@ Function GetNextEEObjNum:LongInt;
      HWMEEObjNum := Result;
   end;
 
-
 Procedure UpdateEE;
     var
       i,j:LongInt;
@@ -209,7 +235,9 @@ Procedure UpdateHasParent;
              then
                with ObjectList[i] do begin
                  HasParent := True;
+                 Used := True;  // what is the parent object doesn't exist?
                  ParentObjID := RelationshipList[j].DestObjNum;
+                 ObjectList[RelationshipList[j].DestObjIdx].Used := True;
                end;
          end; // if
      // Search for Positions w/o assignment to OU
@@ -228,6 +256,9 @@ Procedure UpdateHasParent;
              // If so, then we have a parent ID, so we set HasParent to True.
              then
                with ObjectList[i] do begin
+                 Used := True;  // what is the parent object doesn't exist?
+                 ObjectList[RelationshipList[j].DestObjIdx].Used := True;
+                 RelationshipList[j].Used := True;
                  HasParent := True;
                  ParentObjID := RelationshipList[j].DestObjNum;
                  if RelationshipList[j].Relationship = 'A012' then
@@ -237,20 +268,69 @@ Procedure UpdateHasParent;
     end; // for
   end; // of Procedure
 
-Function GetObjectById(Const ObjID:LongInt):TObjectEntry;
+Procedure IndexRelations;
   var
-    i:longint;
+    i,j:LongInt;
   begin
-   for i := low(ObjectList) to high(ObjectList) do
-     if  ObjectList[i].ObjNum = ObjID then
-     begin
-       result := ObjectList[i];
-       exit;
-     end;
-    result.costctr := 0;
+    for j := low(RelationshipList) to high(RelationshipList) do
+        with RelationshipList[j] do
+          begin
+            // Look up index in Object array for source object ID
+            SrcObjIdx := GetObjectIdxById(SrcObjNum);
+            // Look up index in Object array for destination object ID
+            DestObjIdx := GetObjectIdxById(DestObjNum);
+          end;
   end;
 
-Function GetObjectLongTextByID(Const ObjID:LongInt):UTF8String;
+Procedure UnusedObjectReport(StringList:TStrings);
+  var
+    i:LongInt;
+  begin
+     StringList.Append('Unused Objects');
+     for i := low(ObjectList) to high(ObjectList) do
+       case ObjectList[i].ObjType of
+       // Look for Unused objects
+       OBJ_EMPLOYEE,
+       OBJ_ORG_UNIT,
+       OBJ_POSITION:
+       If (not ObjectList[i].Used) then
+         with ObjectList[i] do
+           StringList.Append(ObjType + ' '+ IntToStr(ObjNum)
+                             + ' ' + ShortText + ' ' + LongText);
+       end;
+  end;
+
+Function GetObjectById(Const ObjID:TObjId):TObjectEntry;
+  var
+    ThisObject:longint;
+  begin
+   Result := EmptyObj;
+//   result.costctr := 0;
+//   result.ParentObjID := 0;
+ //  FillChar(Result, Result, #0);
+   for ThisObject := low(ObjectList) to high(ObjectList) do
+     if  ObjectList[ThisObject].ObjNum = ObjID then
+     begin
+       result := ObjectList[ThisObject];
+       exit;
+     end;
+  end;
+
+Function GetObjectIdxById(Const ObjID:TObjID):LongInt;
+var
+  i:longint;
+begin
+  result := 0;
+  for i := low(ObjectList) to high(ObjectList) do
+    if  ObjectList[i].ObjNum = ObjID then
+      begin
+        result := i;
+        exit;
+      end;
+end;
+
+
+Function GetObjectLongTextByID(Const ObjID:TObjID):UTF8String;
   var
     Obj:TObjectEntry;
   begin
@@ -259,7 +339,7 @@ Function GetObjectLongTextByID(Const ObjID:LongInt):UTF8String;
      Result := Obj.LongText;
   end;
 
-Function GetObjectShortTextByID(Const ObjID:LongInt):UTF8String;
+Function GetObjectShortTextByID(Const ObjID:TObjID):UTF8String;
   var
     Obj:TObjectEntry;
   begin
@@ -288,8 +368,12 @@ Procedure UpdateCstCtr;
              // If so, then we have a parent ID, so we set HasParent to True.
              then
                with ObjectList[i] do begin
-         //        HasParent := True;
+                 RelationshipList[j].Used := True;
+         //        HasCostCtr := True;
                  CostCtr := RelationshipList[j].DestObjNum;
+                 Used := True; // What if the cost center doesn't exist?
+                 ObjectList[RelationshipList[j].DestObjIdx].Used := True;
+                 ObjectList[RelationshipList[j].SrcObjIdx].Used := True;
                end;
          end; // if
 
@@ -317,8 +401,10 @@ Procedure UpdateJob;
              // If so, then we have a parent ID, so we set HasParent to True.
              then
                with ObjectList[i] do begin
-         //        HasParent := True;
+         //        HasJob := True;
+                 RelationshipList[j].Used := True;
                  Job := RelationshipList[j].DestObjNum;
+                 Used := True; // What if destination Job doesn't exist?
                end;
          end; // if
 
@@ -397,7 +483,7 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                     LineBuffer.ObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
                COL_B:begin // Object ID
-                   LineBuffer.ObjNum:=StrToInt(Parser.CurrentCellText);
+                   LineBuffer.ObjNum:=StrToInt64(Parser.CurrentCellText);
                    // Update high water mark if necessary
                    case LineBuffer.ObjType of
                      OBJ_ORG_UNIT: if LineBuffer.ObjNum > HWMOUObjNum then
@@ -499,8 +585,7 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
                     LineBuffer.SrcObjType:=Copy(Parser.CurrentCellText,1,1)[1];
                  end;
                COL_B:begin // Source Object ID
-
-                   LineBuffer.SrcObjNum:=StrToInt(Parser.CurrentCellText);
+                   LineBuffer.SrcObjNum:=StrToInt64(Parser.CurrentCellText);
                  end;
                COL_C:begin // Relationship Direction + code
                    LineBuffer.Relationship:=Parser.CurrentCellText;
@@ -516,7 +601,7 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
                     LineBuffer.DestObjType := Parser.CurrentCellText[1];
                  end;
                COL_G:begin // Destination Object Number
-                   LineBuffer.DestObjNum := StrToInt(Parser.CurrentCellText);
+                   LineBuffer.DestObjNum := StrToInt64(Parser.CurrentCellText);
                    Inc(RecordsLoaded);
                    SetLength(RelationshipList,RecordsLoaded);
                    SendDebug(LineBuffer.SrcObjType
@@ -590,7 +675,7 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
                     If length(Parser.CurrentCellText) > 0 then
                        begin
                          LineBuffer.ObjType:=OBJ_EMPLOYEE;
-                         LineBuffer.ObjNum :=StrToInt(Parser.CurrentCellText);
+                         LineBuffer.ObjNum :=StrToInt64(Parser.CurrentCellText);
                          // Update high water mark if necessary
                          if LineBuffer.ObjNum > HWMEEObjNum then
                            HWMEEObjNum := LineBuffer.ObjNum;
@@ -603,7 +688,7 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
                      LineBuffer.EndDate:=Parser.CurrentCellText;
                    end;
                  COL_Q:begin // Position
-                     LineBuffer.ParentObjID :=StrToInt(Parser.CurrentCellText);
+                     LineBuffer.ParentObjID :=StrToInt64(Parser.CurrentCellText);
                    end;
                  COL_W:begin // Kanji Family Name
                       LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
@@ -681,7 +766,8 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
      UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
      if not(FileExistsUTF8(UTF8FileName)) then exit;
      Parser:=TCSVParser.Create;
-     FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename), fmOpenRead+fmShareDenyWrite);
+     FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename),
+                                      fmOpenRead + fmShareDenyWrite);
      try
       Parser.Delimiter:=ADelimiter;
       Parser.SetSource(FileStream);
@@ -706,7 +792,7 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
                      If length(Parser.CurrentCellText) > 0 then
                        begin
                          LineBuffer.ObjType:=OBJ_COSTCTR;
-                         LineBuffer.ObjNum :=StrToInt(Parser.CurrentCellText);
+                         LineBuffer.ObjNum :=StrToInt64(Parser.CurrentCellText);
                          // Update high water mark if necessary
                          if LineBuffer.ObjNum > HWMCCObjNum then
                            HWMCCObjNum := LineBuffer.ObjNum;
@@ -751,6 +837,25 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
 
     end;
 
+Function EmptyObj:TObjectEntry;
+  begin
+    Result.ObjType := ' ';
+    Result.ObjNum := 0;
+    Result.BeginDate := '';
+    Result.EndDate := '';
+    Result.ShortText:='';
+    Result.LongText:='';
+    Result.Dummy:= '';
+    Result.LangCode:='';
+    // Extra attributes for internal use
+    Result.HasParent:=False;
+    Result.ParentObjID:=0;
+    Result.Stale:=True;
+    Result.Chief:=False;
+    Result.Job:=0;  // Job Code for Position
+    Result.CostCtr:=0; // Cost Center for Position or Org. Unit
+    Result.Used:=False;
+  end;
 
 initialization
   Init_Number_Ranges;

@@ -32,6 +32,9 @@ type
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
+    miTest: TMenuItem;
+    miValidation: TMenuItem;
     miEEFileExport: TMenuItem;
     miImportSSLCCRMD: TMenuItem;
     miImportSSLNHIRE: TMenuItem;
@@ -58,6 +61,7 @@ type
       State: TDragState; var Accept: Boolean);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem3Click(Sender: TObject);
     procedure miEEFileExportClick(Sender: TObject);
     procedure miImportSSLCCRMDClick(Sender: TObject);
     procedure miAboutClick(Sender: TObject);
@@ -68,6 +72,7 @@ type
     procedure miImportSSL1000Click(Sender: TObject);
     procedure miImportSSLNHIREClick(Sender: TObject);
     procedure miProcessClick(Sender: TObject);
+    procedure miTestClick(Sender: TObject);
     procedure tvOrgChartClick(Sender: TObject);
     procedure tvOrgChartDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;
@@ -85,7 +90,7 @@ implementation
 
 
 uses
-  omz_logic, dbugintf, omz_rsrc;
+  omz_logic, dbugintf, omz_rsrc, omz_console;
 
 {$R *.lfm}
 
@@ -194,6 +199,12 @@ begin
 
 end;
 
+procedure TForm1.MenuItem3Click(Sender: TObject);
+begin
+  frmConsole.show;
+  UnusedObjectReport(frmConsole.mmConsole.Lines);
+end;
+
 procedure TForm1.miEEFileExportClick(Sender: TObject);
 Const
   sep:char=#9;
@@ -206,7 +217,7 @@ var
   OU1:TObjectEntry;
   OU2:TObjectEntry;
   OU3:TObjectEntry;
-  kostl:LongInt;
+  kostl:TObjID;
   ChiefFlag:UTF8String;
 begin
 if SaveDialog1.Execute then
@@ -220,7 +231,8 @@ if SaveDialog1.Execute then
              + Sep + 'Pos. Text(S)'
              + Sep + 'Pos. Text(L)'
              + Sep + 'Job No.'
-             + sep + 'Job Text'
+             + sep + 'Job Text(S)'
+             + sep + 'Job Text(L)'
              + sep + 'Manager'
              + sep + 'OU3 No.'
              + sep + 'OU3 Text'
@@ -260,30 +272,29 @@ if SaveDialog1.Execute then
 
      If PosObj.Chief then ChiefFlag := 'Yes' else ChiefFlag := 'No';
 
-     Outline := IntToStr(eeObj.ObjNum)
-                 + sep
-                 + eeObj.ShortText
-                 + sep
-                 + eeObj.LongText
-                 + sep
-                 + IntToStr(eeObj.ParentObjID)
-                 + Sep + PosObj.LongText
-                 + Sep + IntToStr(PosObj.Job)
-                 + sep + GetObjectShortTextByID(PosObj.Job)
-                 + sep + GetObjectLongTextByID(PosObj.Job)
+     Outline := IntToStr(eeObj.ObjNum)   // EE No.
+                 + sep + eeObj.ShortText // Kanji Name
+                 + sep + eeObj.LongText  // Romaji name
+                 + sep + ObjIDToStr(eeObj.ParentObjID) // Position No.
+                 + Sep + PosObj.ShortText             // Position ShortText
+                 + Sep + PosObj.LongText              // Position LongText
+                 + Sep + ObjIDToStr(PosObj.Job)             // Job ID
+                 + sep + GetObjectShortTextByID(PosObj.Job) // Job ShortText
+                 + sep + GetObjectLongTextByID(PosObj.Job)  // Job LongText
                  + sep + ChiefFlag
-                 + sep + IntToStr(ou3.ObjNum)
+                 + sep + ObjIDToStr(ou3.ObjNum)
                  + sep + ou3.LongText
-                 + sep + IntToStr(ou2.ObjNum)
+                 + sep + ObjIDToStr(ou2.ObjNum)
                  + sep + ou2.LongText
-                 + sep + IntToStr(ou1.ObjNum)
+                 + sep + ObjIDToStr(ou1.ObjNum)
                  + sep + ou1.LongText
-                 + sep + IntToStr(kostl)
+                 + sep + ObjIDToStr(kostl)
                  + sep + GetObjectLongTextByID(kostl)
                  ;
       Writeln(EEFile, outline);
     end;
   System.Close(EEFile);
+  StatusBar1.SimpleText := 'Employe File Export Complete';
   end;
 end;
 procedure TForm1.miImportSSLCCRMDClick(Sender: TObject);
@@ -550,11 +561,13 @@ Procedure Add_Employee(const h,i,j:LongInt);
   ParentNode := tvOrgChart.Items.FindNodeWithData(Pointer(ObjectList[i].ParentObjID));
   if ParentNode = nil then
     begin  // We couldn't find the parent on the Org. Chart
-     SendDebug('Level:' + IntToStr(H) + ' Skipping Employee with missing parent: ' + IntToStr(ObjectList[i].ObjNum) + ObjectList[i].LongText);
+     SendDebug('Level:' + IntToStr(H) + ' Skipping Employee with missing parent: '
+                  + IntToStr(ObjectList[i].ObjNum) + ObjectList[i].LongText);
     end
   else // Parent (Position) found
    begin   // We found the parent (Position)
    // Generate Long Text
+   ObjectList[i].Used := True; // This should be done in the logic unit, but...
    LongText :=  IntToStr(ObjectList[i].ObjNum)
      + ' ' + ObjectList[i].LongText
      + ' (' + ObjectList[i].ShortText + ')';
@@ -566,10 +579,17 @@ Procedure Add_Employee(const h,i,j:LongInt);
                  ImageIndex := IDX_EMPLOYEE;
                  SelectedIndex := ImageIndex;
                end;
+
      ParentNode.Expand(True);
      ObjectList[i].Stale := False;
    end; // parent found
  end; // Add Employee
+
+Procedure UpdateStatus(Const Message:UTF8String);
+  begin
+    StatusBar1.SimpleText:= Message;
+    Application.ProcessMessages;
+  end;
 
 const
   MAX_DEPTH = 20;
@@ -580,10 +600,18 @@ var
 begin
   tvOrgChart.items.clear;
   // This transfers parent ID relationship from IT1001 to IT1000 structure.
+  UpdateStatus(rsIdxRel);
+  IndexRelations; // Build Relation List -> Object List Index
+  UpdateStatus(rsIdxOUParent);
   UpdateHasParent;
+  UpdateStatus(rsIdxCCAss);
   UpdateCstCtr;
+  UpdateStatus(rsIdxJobAss);
   UpdateJob;
+  UpdateStatus(rsIdxPosAss);
   UpdateEE;
+  UpdateStatus(rsUpdTree);
+  tvOrgChart.BeginUpdate;
  for h := 1 to MAX_DEPTH do // 10 rounds = max 10 levels org. chart heirarchy
    begin
     ChangedThisRound := False;
@@ -609,16 +637,30 @@ begin
        // Leave loop early if we havn't found any remaining stale items
 //       If not ChangedThisRound then break;
      end; // FOR... Max_Depth
+  tvOrgChart.EndUpdate;
   miExportHTML.enabled := True;
   miExportDot.enabled := True;
   miExportTsv.enabled := True;
   miProcess.Enabled:=False;
+  miValidation.Enabled:=True;
   StatusBar1.SimpleText := rsProcessingComplete;
+end;
+
+procedure TForm1.miTestClick(Sender: TObject);
+var
+   PosObj:TObjectEntry;
+   posnumber:int64;
+   ShortText, LongText:UTF8String;
+begin
+  posnumber := 22201759;
+  PosObj := GetObjectById(posnumber);
+  ShortText := PosObj.ShortText;
+  LongText := PosObj.LongText;
 end;
 
 procedure TForm1.tvOrgChartClick(Sender: TObject);
 var
-  ObjID:LongInt;
+  ObjID:TObjID;
   ObjectEntry:TObjectEntry;
 begin
    if tvOrgChart.Selected <> nil then
@@ -630,7 +672,7 @@ begin
       leObjText.text := ObjectEntry.ShortText;
       leObjTextL.text := ObjectEntry.LongText;
       leCstCtr.text := '';
-      leCstCtr.text := IntToStr(ObjectEntry.CostCtr);
+      leCstCtr.text := ObjIDToStr(ObjectEntry.CostCtr);
       leKostlText.text := GetObjectShortTextByID(ObjectEntry.CostCtr);
       leKostlTextL.text := GetObjectLongTextByID(ObjectEntry.CostCtr);
       leJobCd.text := '';

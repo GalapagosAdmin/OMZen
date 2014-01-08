@@ -21,6 +21,12 @@ ResourceString
   rsHTMLExportComplete = 'HTML (Web Page) Export Complete.';
   rsDotExportComplete = 'DOT (GraphViz) Export Complete';
   rsTSVExportComplete = 'TSV (Spreadsheet) Export Complete';
+  rsIdxRel = 'Index Relationships...';
+  rsIdxOUParent = 'Index Parent Org Units...';
+  rsIdxCCAss = 'Index Cost Center Assignments...';
+  rsIdxJobAss = 'Index Job Assignments...';
+  rsIdxPosAss = 'Employee to Position Assignments...';
+  rsUpdTree = 'Update Tree Display...';
 implementation
 
 end.

@@ -1,0 +1,19 @@
+object frmConsole: TfrmConsole
+  Left = 147
+  Height = 419
+  Top = 371
+  Width = 704
+  Caption = 'Output Console'
+  ClientHeight = 419
+  ClientWidth = 704
+  LCLVersion = '1.1'
+  object mmConsole: TMemo
+    Left = 0
+    Height = 419
+    Top = 0
+    Width = 704
+    Align = alClient
+    ScrollBars = ssVertical
+    TabOrder = 0
+  end
+end

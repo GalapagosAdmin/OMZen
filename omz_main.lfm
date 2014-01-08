@@ -431,6 +431,18 @@ object Form1: TForm1
         OnClick = miEEFileExportClick
       end
     end
+    object miValidation: TMenuItem
+      Caption = 'Validation'
+      Enabled = False
+      object MenuItem3: TMenuItem
+        Caption = 'Unused Items'
+        OnClick = MenuItem3Click
+      end
+      object miTest: TMenuItem
+        Caption = 'Test'
+        OnClick = miTestClick
+      end
+    end
     object MenuItem2: TMenuItem
       Caption = 'Help'
       OnClick = MenuItem2Click
