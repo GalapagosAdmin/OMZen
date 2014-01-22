@@ -73,6 +73,7 @@
         <Filename Value="omz_console.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmConsole"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="omz_console"/>
       </Unit6>

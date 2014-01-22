@@ -33,6 +33,7 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    miNumberRange: TMenuItem;
     miTest: TMenuItem;
     miValidation: TMenuItem;
     miEEFileExport: TMenuItem;
@@ -71,6 +72,7 @@ type
     procedure miExportTsvClick(Sender: TObject);
     procedure miImportSSL1000Click(Sender: TObject);
     procedure miImportSSLNHIREClick(Sender: TObject);
+    procedure miNumberRangeClick(Sender: TObject);
     procedure miProcessClick(Sender: TObject);
     procedure miTestClick(Sender: TObject);
     procedure tvOrgChartClick(Sender: TObject);
@@ -294,11 +296,13 @@ if SaveDialog1.Execute then
       Writeln(EEFile, outline);
     end;
   System.Close(EEFile);
-  StatusBar1.SimpleText := 'Employe File Export Complete';
+  StatusBar1.SimpleText := 'Employee File Export Complete';
   end;
 end;
 procedure TForm1.miImportSSLCCRMDClick(Sender: TObject);
 begin
+ openDialog1.Filter:='CCRMD|*CC*.txt';
+ OpenDialog1.title := 'Select Cost Center TXT file...';
    if OpenDialog1.Execute then
      begin
        Import_ADP_CCRMD(OpenDialog1.FileName);
@@ -318,6 +322,8 @@ end;
 
 procedure TForm1.miImportSSL1001Click(Sender: TObject);
 begin
+ openDialog1.Filter:='IT1001|*1001*.txt';
+ OpenDialog1.title := 'Select IT1001 TXT file...';
   if OpenDialog1.Execute then
     begin
       Import_ADP_HRP1001(OpenDialog1.FileName);
@@ -331,27 +337,23 @@ end;
 procedure TForm1.miExportHTMLClick(Sender: TObject);
 var
   Node: TTreeNode;
-  Indent, s: Integer;
   Padding: utf8string;
   icon_file: utf8string;
   htmlFile:TextFile;
 const
   LevelIndent = 4;
-begin
-  if SaveDialog1.Execute then
-   begin
-    AssignFile(htmlFile, UTF8ToANSI(SaveDialog1.FileName));
-    Rewrite(htmlFile);
-    Writeln(htmlFile, '<html><head><title>Org. Chart</title></head><body><pre>');
+  MaxLevel = 3;
+  OutputOU = True;
+  OutputPos=False;
+  OutputEE=False;
 
-    Node := tvOrgChart.Items.GetFirstNode;
-    while Node <> nil do
-     begin
-       if Node.Level = 0 then
-        padding := ''
-       else
-        begin
-//         Padding := StringOfChar(' ', Node.Level * LevelIndent-1);
+  Procedure OutOneLine;
+
+    Procedure OutPadding;
+    var
+      Indent, s: Integer;
+      begin
+       //         Padding := StringOfChar(' ', Node.Level * LevelIndent-1);
 //         s := 1;
          padding := '';
          for s := 1 to ((Node.Level-1) * LevelIndent) do //step 4 do
@@ -364,24 +366,71 @@ begin
 //           Inc(s, 4);
          end;
          Padding := Padding + '└───';
-        end;
-      case Node.ImageIndex of
-        IDX_ORG_UNIT:icon_file := 'ou_icon.png';
-        IDX_POSITION:icon_file := 'normal_position_icon.png';
-        IDX_CHIEF_POSITION:icon_file := 'chief_position_icon.png';
-        IDX_EMPLOYEE:icon_file := 'employee_icon.png';
-        else
-          icon_file := '';
       end;
+
+    Procedure OutIcon;
+      begin
+       case Node.ImageIndex of
+      IDX_ORG_UNIT:icon_file := 'ou_icon.png';
+      IDX_POSITION:icon_file := 'normal_position_icon.png';
+      IDX_CHIEF_POSITION:icon_file := 'chief_position_icon.png';
+      IDX_EMPLOYEE:icon_file := 'employee_icon.png';
+      else
+        icon_file := '';
+    end;
+      end;
+
+   Procedure OutHTMLLine;
+     begin
       Writeln(htmlFile, Padding + '<img src="' +
                                 icon_file + '">&nbsp;'
                                 + Node.Text + '');
-//      + Node.Text + '<br>');
-      Node := Node.GetNext;
      end;
 
-    Writeln(htmlFile, '</pre></body></html>');
-    System.close(htmlFile);
+    begin  // Procedure OutOneLine
+      if Node.Level = 0 then
+       padding := ''
+      else
+         OutPadding;
+      OutIcon;
+      OutHTMLLine;
+//      + Node.Text + '<br>');
+    end;   // Procedure OutOneLine
+
+  Procedure StartFile;
+    begin
+     AssignFile(htmlFile, UTF8ToANSI(SaveDialog1.FileName));
+     Rewrite(htmlFile);
+     Writeln(htmlFile, '<html><head><title>Org. Chart</title></head><body><pre>');
+    end;
+
+  Procedure FinishFile;
+    begin
+      Writeln(htmlFile, '</pre></body></html>');
+      System.close(htmlFile);
+    end;
+
+  Procedure OutOneLineConditional;
+    begin
+      case Node.ImageIndex of
+        IDX_ORG_UNIT:OutOneLine;
+        IDX_POSITION,
+        IDX_CHIEF_POSITION:OutOneLine;
+        IDX_EMPLOYEE:OutOneLine;
+       end;
+    end;
+
+begin
+  if SaveDialog1.Execute then
+   begin
+     StartFile;
+     Node := tvOrgChart.Items.GetFirstNode;
+     while Node <> nil do
+       begin
+         OutOneLineConditional;
+         Node := Node.GetNext;
+       end;
+     FinishFile;
     StatusBar1.SimpleText := rsHTMLExportComplete;
    end;
 end;
@@ -431,8 +480,9 @@ end;
 
 procedure TForm1.miExportTsvClick(Sender: TObject);
 begin
-  if OpenDialog1.Execute then
+  if SaveDialog1.Execute then
     begin
+ //    showmessage(SaveDialog1.FileName);
       tvOrgChart.SaveToFile(SaveDialog1.FileName);
       StatusBar1.SimpleText:= rsTSVExportComplete;
     end;
@@ -440,6 +490,8 @@ end;
 
 procedure TForm1.miImportSSL1000Click(Sender: TObject);
 begin
+ openDialog1.Filter:='IT1000|*1000*.txt';
+ OpenDialog1.title := 'Select IT1000 TXT file...';
     if OpenDialog1.Execute then
     begin
       Import_ADP_HRP1000(OpenDialog1.FileName);
@@ -454,6 +506,8 @@ end;
 
 procedure TForm1.miImportSSLNHIREClick(Sender: TObject);
 begin
+ openDialog1.Filter:='NHIRE|*NHIRE*.txt';
+ OpenDialog1.title := 'Select NHIRE TXT file...';
     if OpenDialog1.Execute then
     begin
       Import_ADP_NHIRE(OpenDialog1.FileName);
@@ -463,6 +517,12 @@ begin
       miEEFileExport.enabled := True;
       StatusBar1.SimpleText := rsImportSuccNHIRE;
     end;
+end;
+
+procedure TForm1.miNumberRangeClick(Sender: TObject);
+begin
+  frmConsole.show;
+  NumberRangeReport(frmConsole.mmConsole.Lines)
 end;
 
 procedure TForm1.miProcessClick(Sender: TObject);

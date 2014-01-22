@@ -1,5 +1,5 @@
 unit omz_logic;
-
+// Reads input files, manages array
 {$mode objfpc}{$H+}
 
 {$modeswitch advanced_records}
@@ -48,6 +48,16 @@ const
  COL_AA = 26;
  COL_AB = 27;
  COL_AW = 48;
+ HWMOUObjMin =  12200000; // Should be read from settings
+ HWMPosObjMin = 22200000; // Should be read from settings
+ HWMEEObjMin  =  22600000; // Should be read from settings
+ HWMCCObjMin  =  9990000000; // Should be read from settings
+ HWMOUObjMax  =  12299999; // Should be read from settings
+ HWMPosObjMax = 22299999; // Should be read from settings
+ HWMEEObjMax  =  22699999; // Should be read from settings
+ HWMCCObjMax  =  9999999999; // Should be read from settings
+
+
 
 type
   // We need 64 bit to cover some long cost centers.
@@ -129,6 +139,7 @@ Function GetObjectShortTextByID(Const ObjID:TObjID):UTF8String;
 
 Function DotStrip(const Original:UTF8String):UTF8String;
 Procedure UnusedObjectReport(StringList:TStrings);
+Procedure NumberRangeReport(StringList:TStrings);
 
 Function ObjIDToStr(const OBJID:TObjID):UTF8String;
 
@@ -176,10 +187,10 @@ Function DotStrip(const Original:UTF8String):UTF8String;
 Procedure Init_number_ranges;
 // Set various high-water marks to number ranges
   begin
-   HWMOUObjNum :=  12200000; // Should be read from settings
-   HWMPosObjNum := 22200000; // Should be read from settings
-   HWMEEObjNum :=  22600000; // Should be read from settings
-   HWMCCObjNum :=  9990000000; // Should be read from settings
+   HWMOUObjNum :=  HWMOUObjMin;
+   HWMPosObjNum := HWMPosObjMin;
+   HWMEEObjNum :=  HWMEEObjMin;
+   HWMCCObjNum :=  HWMCCObjMin;
   end;
 
 Procedure Init_Lists;
@@ -290,13 +301,50 @@ Procedure UnusedObjectReport(StringList:TStrings);
      for i := low(ObjectList) to high(ObjectList) do
        case ObjectList[i].ObjType of
        // Look for Unused objects
-       OBJ_EMPLOYEE,
+       OBJ_EMPLOYEE,   // perhaps skip employees with Position 99999999
        OBJ_ORG_UNIT,
        OBJ_POSITION:
-       If (not ObjectList[i].Used) then
+       If (not ObjectList[i].Used) and (ObjectList[i].ParentObjID <> 99999999 )
+         then
+         with ObjectList[i] do
+           StringList.Append(ObjType + ' '+ IntToStr(ObjNum) + IntToStr(ParentObjID)
+                             + ' ' + ShortText + ' ' + LongText);
+       end;
+  end;
+
+Procedure NumberRangeReport(StringList:TStrings);
+  var
+    i:LongInt;
+  begin
+     StringList.Append('Number Range check:');
+     for i := low(ObjectList) to high(ObjectList) do
+       case ObjectList[i].ObjType of
+       // Look for Unused objects
+       OBJ_EMPLOYEE:begin
+                     if ((ObjectList[i].ObjNum <  HWMEEObjMin )
+                      or
+                      (ObjectList[i].ObjNum > HWMEEObjMax)) then
+                        with ObjectList[i] do
+                          StringList.Append(ObjType + ' '+ IntToStr(ObjNum)
+                                            + ' ' + ShortText + ' ' + LongText);
+                    end;
+       OBJ_ORG_UNIT:begin
+                     if ((ObjectList[i].ObjNum <   HWMOUObjMin)
+                      or
+                      (ObjectList[i].ObjNum > HWMOUObjMax)) then
+                        with ObjectList[i] do
+                          StringList.Append(ObjType + ' '+ IntToStr(ObjNum)
+                                            + ' ' + ShortText + ' ' + LongText);
+
+                    end;
+       OBJ_POSITION:begin
+                     if ((ObjectList[i].ObjNum <   HWMPosObjMin)
+                      or
+                      (ObjectList[i].ObjNum > HWMPosObjMax)) then
          with ObjectList[i] do
            StringList.Append(ObjType + ' '+ IntToStr(ObjNum)
                              + ' ' + ShortText + ' ' + LongText);
+       end;
        end;
   end;
 

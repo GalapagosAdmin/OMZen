@@ -12,7 +12,7 @@ ResourceString
   rsPosition = 'Position';
   rsChiefPosition = 'Chief Position (Manager)';
   rsEmployee = 'Employee';
-  rsAbout = 'Org. Management Zen 1.01 by Noah Silva (c) 2013,2014.';
+  rsAbout = 'Org. Management Zen 1.02 by Noah Silva (c) 2013,2014.';
   rsImportSucc1000 = 'Infotype 1000 (Objects) Import Successful.';
   rsImportSucc1001 = 'Infotype 1001 (Relationships) Import Successful.';
   rsImportSuccNHIRE = 'NHIRE (New Hire Action) Import Successful';

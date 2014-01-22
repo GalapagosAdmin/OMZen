@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 504
+  Left = 476
   Height = 575
-  Top = 36
+  Top = 45
   Width = 791
   Caption = 'OM Zen'
   ClientHeight = 554
@@ -438,6 +438,10 @@ object Form1: TForm1
         Caption = 'Unused Items'
         OnClick = MenuItem3Click
       end
+      object miNumberRange: TMenuItem
+        Caption = 'Number Range Report'
+        OnClick = miNumberRangeClick
+      end
       object miTest: TMenuItem
         Caption = 'Test'
         OnClick = miTestClick
@@ -453,6 +457,8 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
+    DefaultExt = '.TXT'
+    Filter = 'Text File|*.txt'
     left = 504
     top = 144
   end
