@@ -1,7 +1,7 @@
 object frmConsole: TfrmConsole
-  Left = 147
+  Left = 148
   Height = 419
-  Top = 371
+  Top = 271
   Width = 704
   Caption = 'Output Console'
   ClientHeight = 419

@@ -49,10 +49,12 @@ const
  COL_AB = 27;
  COL_AW = 48;
  HWMOUObjMin =  12200000; // Should be read from settings
+ HWMOUObjMin2 =  12200000; // Should be read from settings
  HWMPosObjMin = 22200000; // Should be read from settings
  HWMEEObjMin  =  22600000; // Should be read from settings
  HWMCCObjMin  =  9990000000; // Should be read from settings
  HWMOUObjMax  =  12299999; // Should be read from settings
+ HWMOUObjMax2  =  12299999; // Should be read from settings
  HWMPosObjMax = 22299999; // Should be read from settings
  HWMEEObjMax  =  22699999; // Should be read from settings
  HWMCCObjMax  =  9999999999; // Should be read from settings
