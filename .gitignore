@@ -16,3 +16,9 @@ bin/*
 *.s
 lib/
 *.dbg
+
+OMZen.app/Contents/Info.plist
+
+OMZen
+
+OMZen.app/Contents/PkgInfo
