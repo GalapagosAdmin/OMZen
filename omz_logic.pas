@@ -133,6 +133,10 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
 // Imports CCRMD (Cost Center Master Data) Sheet, which has been exported from Excel
 // by using Save As... > Unicode  (This produces a tab delimited UTF16LE text file)
 
+Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
+// Imports the H1000/H1001 data from a Combination OM file, which has been
+// exported from Excel by using Save As... > Unicode  (This produces a tab
+// delimited UTF16LE text file)
 
 Procedure UpdateHasParent;
 Procedure UpdateCstCtr;
@@ -623,9 +627,9 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
 
   end; // Import_ADP_HTP1000
 
-Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
+Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
   var
-    UTF8FileName:UTF8String;
+//    UTF8FileName:UTF8String;
     FileStream: TFileStream;
     Parser: TCSVParser;
     ADelimiter:Char=#9; // Tab?
@@ -636,11 +640,12 @@ Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
     var
       ObjectTypColNum:Integer;
   begin
+   HeaderRows:=1;  // This format is always 1
    SetLength(ObjectList,0);
    RecordsLoaded := 0;
    // Excel File→Save As...→Unicode = UTF16LE, so convert it to UTF8 first
-   UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
-   if not(FileExistsUTF8(UTF8FileName)) then exit;
+//   UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
+//   if not(FileExistsUTF8(UTF8FileName)) then exit;
    Parser:=TCSVParser.Create;
    FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename), fmOpenRead+fmShareDenyWrite);
    try
@@ -692,14 +697,20 @@ Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
                                        HWMPosObjNum := LineBuffer.ObjNum
                    end;  // of CASE
                  end;
-               COL_J:begin // Short Text Description
-                    LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
+               COL_J:begin // Short Text Description / Long Text Description
+                   // Relationship lines may have duplicate entries without text.
+                   if Parser.CurrentCellText <> '' then
+                      begin
+                        LineBuffer.ShortText := UTF8Copy(Parser.CurrentCellText,1,12);
+                        LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
+                     end;
                  end;
-               COL_K:begin // Long Text Description
-                   LineBuffer.LongText := UTF8Copy(Parser.CurrentCellText,1,40);
+               COL_K:begin // Full Path
                end;
                COL_V:Begin    // Priority code and Final Column
                  // ignore priority for now
+                 if LineBuffer.ShortText <> '' then
+                   begin
                  LineBuffer.LangCode := 'EN'; // as dummy
                  LineBuffer.HasParent := False;
                  LineBuffer.Stale := True;
@@ -716,9 +727,10 @@ Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
                            + LineBuffer.LangCode
                            );
                  ObjectList[RecordsLoaded-1] := LineBuffer;
+                 end;
                      end;
              end; // of CASE CurrentCol
-           end;// row >= 3
+           end;// row >= HdrRow
       // Set Array text
       //:=Parser.CurrentCellText;
       end;
@@ -728,11 +740,11 @@ Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
    finally
      Parser.Free;
      FileStream.Free;
-     If not DeleteFileUTF8(UTF8FileName) then
-       SendDebug(rsErrTempFileNoDelete);
+//     If not DeleteFileUTF8(UTF8FileName) then
+//       SendDebug(rsErrTempFileNoDelete);
    end;
 
-  end; // Import_LX_Combo
+  end; // Import_LX_Combo1
 
 
 
@@ -824,6 +836,120 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
 
   end;    // PROCEDURE Import_ADP_HRP1001
 
+Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
+  var
+    FileStream: TFileStream;
+    Parser: TCSVParser;
+    ADelimiter:Char=#9; // Tab?
+    LineBuffer:TRelationshipEntry;
+    tmpString :String;
+    cRow, cCol:LongInt;
+    RecordsLoaded:LongInt;
+  begin
+   // Clear out high water marks
+   Init_number_ranges;
+   HeaderRows:=1;// This format is always 1
+   // Erase current items (we don't append)
+   SetLength(RelationshipList,0);
+   RecordsLoaded := 0;
+   Parser:=TCSVParser.Create;
+   FileStream := TFileStream.Create(UTF8ToANSI(UTF8Filename), fmOpenRead+fmShareDenyWrite);
+   try
+    Parser.Delimiter:=ADelimiter;
+    Parser.SetSource(FileStream);
+     while Parser.ParseNextCell do
+       begin
+         cRow := Parser.CurrentRow;
+         cCol := Parser.CurrentCol;
+        Case Parser.CurrentRow of
+         0,1:; // Skip header rows
+         else // Data starts from row 3 (zero based)
+           begin
+            tmpString := Parser.CurrentCellText;
+
+             case Parser.CurrentCol of
+              //COL_A: // Operation Type Code
+              //COL_B: // Operation Type Text
+              //COL_C: // Company Code
+              //COL_D: // Company Text
+               COL_E:begin // Begin Date
+                   LineBuffer.BeginDate:=Parser.CurrentCellText;
+                 end;
+               COL_F:begin // End Date
+                   LineBuffer.EndDate:=Parser.CurrentCellText;
+                 end;
+               COL_G:begin // Source Object Type Code
+                   FillChar(LineBuffer, SizeOf(LineBuffer), #0 );
+                   If length(Parser.CurrentCellText) > 0 then
+                    LineBuffer.SrcObjType:=Copy(Parser.CurrentCellText,1,1)[1];
+                 end;
+               //COL_H: // Object Type Text
+               COL_I:begin // Source Object ID
+                   LineBuffer.SrcObjNum:=StrToInt64(Parser.CurrentCellText);
+                 end;
+               //COL_J: // Object Short Text
+               //COL_K: // Object Long Text
+               //COL_L: // Local Object Short Text
+               //COL_M: // Local Object Long Text
+               //COL_N: // Function Code
+               //COL_O: // Function Text
+               COL_P:begin // Relationship Type (Direction + code)
+                   LineBuffer.Relationship:=Parser.CurrentCellText;
+                 end;
+               //COL_Q: // Relationship type Text
+               COL_R:begin // Destination Object Type Code
+                   If length(Parser.CurrentCellText) > 0 then
+                    LineBuffer.DestObjType := Parser.CurrentCellText[1];
+                 end;
+               //COL_S: // Destionation Object Type Text
+               COL_T:begin // Destination Object Number
+                   LineBuffer.DestObjNum := StrToInt64(Parser.CurrentCellText);
+               end;
+               //COL_U: //Destination Object Short Text
+               COL_V:begin //priority & Last Field
+                 Inc(RecordsLoaded);
+                 SetLength(RelationshipList,RecordsLoaded);
+                 SendDebug(LineBuffer.SrcObjType
+                           + IntToStr(LineBuffer.SrcObjNum)
+                           + LineBuffer.Relationship
+                           + LineBuffer.BeginDate
+                           + LineBuffer.EndDate
+                           + LineBuffer.DestObjType
+                           + IntToStr(LineBuffer.DestObjNum)
+                           );
+                 RelationshipList[RecordsLoaded-1] := LineBuffer;
+               end; // of priority
+             end; // of CASE CurrentCol
+           end;// row >= 3
+        end; // of CASE CurrentRow
+      // Set Array text
+      //:=Parser.CurrentCellText;
+      end;
+     SendDebug(rsRecordsLoaded + IntToStr(RecordsLoaded) );
+
+   finally
+     Parser.Free;
+     FileStream.Free;
+   end;
+  end;    // PROCEDURE Import_LX_Combo2
+
+Procedure Import_LX_Combo(Const UTF16FileName:UTF8String);
+  var
+    UTF8FileName:UTF8String;
+  Begin
+   // For now the load routines are separate, but since it's the same file,
+   // we only have to convert the encoding once.
+   UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
+   if not(FileExistsUTF8(UTF8FileName)) then exit;
+
+   try
+     Import_LX_Combo1(UTF8FileName);
+     Import_LX_Combo2(UTF8FileName);
+   finally
+     If not DeleteFileUTF8(UTF8FileName) then
+         SendDebug(rsErrTempFileNoDelete);
+   end;
+  end;
 
 Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
 // Important columns
