@@ -6,7 +6,7 @@ unit omz_logic;
 interface
 
 uses
-  Classes, SysUtils, CsvDocument;
+  Classes, SysUtils, CsvDocument, INIFiles;
 
 const
  IDX_ORG_UNIT = 0;
@@ -48,16 +48,6 @@ const
  COL_AA = 26;
  COL_AB = 27;
  COL_AW = 48;
- HWMOUObjMin =  12200000; // Should be read from settings
- HWMOUObjMin2 =  12200000; // Should be read from settings
- HWMPosObjMin = 22200000; // Should be read from settings
- HWMEEObjMin  =  22600000; // Should be read from settings
- HWMCCObjMin  =  9990000000; // Should be read from settings
- HWMOUObjMax  =  12299999; // Should be read from settings
- HWMOUObjMax2  =  12299999; // Should be read from settings
- HWMPosObjMax = 22299999; // Should be read from settings
- HWMEEObjMax  =  22699999; // Should be read from settings
- HWMCCObjMax  =  9999999999; // Should be read from settings
 
 
 
@@ -109,6 +99,17 @@ var
    // Lists
   RelationshipList:TRelationshipList;
   ObjectList:TObjectList;
+  INI:TINIFile;
+   HWMOUObjMin,
+ HWMOUObjMin2,
+ HWMPosObjMin,
+ HWMEEObjMin,
+ HWMCCObjMin,
+ HWMOUObjMax,
+ HWMOUObjMax2,
+ HWMPosObjMax,
+ HWMEEObjMax,
+ HWMCCObjMax:LongInt;
 
 Function EmptyObj:TObjectEntry;
 Function GetNextOUObjNum:LongInt;
@@ -189,10 +190,21 @@ Function DotStrip(const Original:UTF8String):UTF8String;
 Procedure Init_number_ranges;
 // Set various high-water marks to number ranges
   begin
-   HWMOUObjNum :=  HWMOUObjMin;
-   HWMPosObjNum := HWMPosObjMin;
-   HWMEEObjNum :=  HWMEEObjMin;
-   HWMCCObjNum :=  HWMCCObjMin;
+    HWMOUObjMin := INI.ReadInteger('NumberRange', 'HWMOUObjMin', 12200000);
+    HWMOUObjMin2 :=  HWMOUObjMin;
+    HWMPosObjMin := INI.ReadInteger('NumberRange', 'HWMPosObjMin', 22200000);
+    HWMEEObjMin :=  INI.ReadInteger('NumberRange', 'HWMEEObjMin', 22600000);
+    HWMCCObjMin :=  INI.ReadInteger('NumberRange', 'HWMCCObjMin', 9990000000);
+    HWMOUObjMax := INI.ReadInteger('NumberRange', 'HWMOUObjMax', 12299999);
+    HWMOUObjMax2 :=  HWMOUObjMax;
+    HWMPosObjMax := INI.ReadInteger('NumberRange', 'HWMPosObjMax', 22299999);
+    HWMEEObjMax := INI.ReadInteger('NumberRange', 'HWMEEObjMax', 22699999);
+    HWMCCObjMax := INI.ReadInteger('NumberRange', 'HWMCCObjMax', 9999999999);
+
+    HWMOUObjNum :=  HWMOUObjMin;
+    HWMPosObjNum := HWMPosObjMin;
+    HWMEEObjNum :=  HWMEEObjMin;
+    HWMCCObjNum :=  HWMCCObjMin;
   end;
 
 Procedure Init_Lists;
@@ -908,8 +920,12 @@ Function EmptyObj:TObjectEntry;
   end;
 
 initialization
+  INI := TINIFile.Create('omz.ini');
   Init_Number_Ranges;
   Init_Lists;
+
+Finalization
+  Ini.Free;
 
 end.
 
