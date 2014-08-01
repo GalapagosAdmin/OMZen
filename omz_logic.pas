@@ -2,7 +2,6 @@ unit omz_logic;
 // Reads input files, manages array
 {$mode objfpc}{$H+}
 
-{$modeswitch advanced_records}
 interface
 
 uses
@@ -13,6 +12,7 @@ const
  IDX_POSITION = 1;
  IDX_CHIEF_POSITION = 2;
  IDX_EMPLOYEE = 3;
+ // Object Type Codes
  OBJ_ORG_UNIT = 'O';
  OBJ_POSITION = 'S';
  OBJ_JOB = 'C';
@@ -71,13 +71,14 @@ type
     DestObjIdx:LongInt; // Index into Object Array
   end;
 
+  // Internal flattened SAP object entry record for array
   TObjectEntry=record
     ObjType:Char;
     ObjNum:TObjID;
     BeginDate:String[10];
     EndDate:String[10];
     ShortText:String[24];
-    LongText:String[80];
+    LongText:String[80];// 40 Chars
     Dummy:String;
     LangCode:String[2];
     // Extra attributes for internal use
@@ -100,16 +101,18 @@ var
   RelationshipList:TRelationshipList;
   ObjectList:TObjectList;
   INI:TINIFile;
-   HWMOUObjMin,
- HWMOUObjMin2,
- HWMPosObjMin,
- HWMEEObjMin,
- HWMCCObjMin,
- HWMOUObjMax,
- HWMOUObjMax2,
- HWMPosObjMax,
- HWMEEObjMax,
- HWMCCObjMax:LongInt;
+  // Number Ranges
+  HWMOUObjMin,
+  HWMOUObjMin2,
+  HWMPosObjMin,
+  HWMEEObjMin,
+  HWMCCObjMin,
+  HWMOUObjMax,
+  HWMOUObjMax2,
+  HWMPosObjMax,
+  HWMEEObjMax,
+  HWMCCObjMax:LongInt;
+  HeaderRows:LongInt;
 
 Function EmptyObj:TObjectEntry;
 Function GetNextOUObjNum:LongInt;
@@ -154,7 +157,8 @@ Procedure IndexRelations;
 
 implementation
 
-uses FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils;
+uses
+  omz_rsrc, FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils;
 
 //class operator TRelationshipEntry.=(aLeft, aRight: TRelationshipEntry): Boolean;
 //begin
@@ -167,6 +171,14 @@ var
   HWMPosObjNum :LongInt;
   HWMEEObjNum  :LongInt;
   HWMCCObjNum  :LongInt;
+
+// converts spreadsheet column (Letter) into zero based column number.
+Function AlphaColumnToNumeric(Const AlphaColumn:String):Integer;
+  begin
+    If Length(AlphaColumn) <> 1 then
+      raise Exception.Create(rsErrAC2NInvalidLength);
+    Result := ord(Uppercase(AlphaColumn[1])[1]) - Ord('A'); //65;
+  end;
 
 Function ObjIDToStr(const ObjID:TObjID):UTF8String;
   begin
@@ -200,6 +212,7 @@ Procedure Init_number_ranges;
     HWMPosObjMax := INI.ReadInteger('NumberRange', 'HWMPosObjMax', 22299999);
     HWMEEObjMax := INI.ReadInteger('NumberRange', 'HWMEEObjMax', 22699999);
     HWMCCObjMax := INI.ReadInteger('NumberRange', 'HWMCCObjMax', 9999999999);
+    HeaderRows := INI.ReadInteger('InputFile', 'HeaderRows', 3);
 
     HWMOUObjNum :=  HWMOUObjMin;
     HWMPosObjNum := HWMPosObjMin;
@@ -517,9 +530,12 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
     tmpString :String;
     cRow, cCol:LongInt;
     RecordsLoaded:LongInt;
+    var
+      ObjectTypColNum:Integer;
   begin
    SetLength(ObjectList,0);
    RecordsLoaded := 0;
+   // Excel File→Save As...→Unicode = UTF16LE, so convert it to UTF8 first
    UTF8FileName := UTF16FiletoUTF8File(UTF16FileName);
    if not(FileExistsUTF8(UTF8FileName)) then exit;
    Parser:=TCSVParser.Create;
@@ -531,9 +547,12 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
        begin
          cRow := Parser.CurrentRow;
          cCol := Parser.CurrentCol;
-        Case Parser.CurrentRow of
-         0,1,2:; // Skip header rows
-         else // Data starts from row 3 (zero based)
+
+       If Parser.CurrentRow < HeaderRows then
+         begin
+           // Skip header rows
+         end
+       else // Process data after header rows
            begin
             tmpString := Parser.CurrentCellText;
 
@@ -568,7 +587,7 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                end;
                COL_G:Begin        // deleimit date?
                  end;
-               COL_H:Begin
+               COL_H:Begin    // Language code and Final Column
                  LineBuffer.LangCode := UTF8Copy(Parser.CurrentCellText,1,2);
                  LineBuffer.HasParent := False;
                  LineBuffer.Stale := True;
@@ -585,22 +604,20 @@ Procedure Import_ADP_HRP1000(Const UTF16FileName:UTF8String);
                            + LineBuffer.LangCode
                            );
                  ObjectList[RecordsLoaded-1] := LineBuffer;
-
-                 end;
+                     end;
              end; // of CASE CurrentCol
            end;// row >= 3
-        end; // of CASE CurrentRow
       // Set Array text
       //:=Parser.CurrentCellText;
       end;
-     SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+     SendDebug(rsRecordsLoaded + IntToStr(RecordsLoaded) );
 
 
    finally
      Parser.Free;
      FileStream.Free;
      If not DeleteFileUTF8(UTF8FileName) then
-       SendDebug('Warning: Unable to delete temporary UTF8 file.');
+       SendDebug(rsErrTempFileNoDelete);
    end;
 
   end;
@@ -682,14 +699,14 @@ Procedure Import_ADP_HRP1001(Const UTF16FileName:UTF8String);
       // Set Array text
       //:=Parser.CurrentCellText;
       end;
-     SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+     SendDebug(rsRecordsLoaded + IntToStr(RecordsLoaded) );
 
 
    finally
      Parser.Free;
      FileStream.Free;
      If not DeleteFileUTF8(UTF8FileName) then
-       SendDebug('Warning: Unable to delete temporary UTF8 file.');
+       SendDebug(rsErrTempFileNoDelete);
    end;
 
   end;    // PROCEDURE Import_ADP_HRP1001
@@ -791,14 +808,14 @@ Procedure Import_ADP_NHIRE(Const UTF16FileName:UTF8String);
         // Set Array text
         //:=Parser.CurrentCellText;
         end;
-       SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+       SendDebug(rsRecordsLoaded + IntToStr(RecordsLoaded) );
 
 
      finally
        Parser.Free;
        FileStream.Free;
        If not DeleteFileUTF8(UTF8FileName) then
-         SendDebug('Warning: Unable to delete temporary UTF8 file.');
+         SendDebug(rsErrTempFileNoDelete);
      end;
 
     end;
@@ -887,14 +904,14 @@ Procedure Import_ADP_CCRMD(Const UTF16FileName:UTF8String);
         // Set Array text
         //:=Parser.CurrentCellText;
         end;
-       SendDebug('Records Loaded:' + IntToStr(RecordsLoaded) );
+       SendDebug(rsRecordsLoaded + IntToStr(RecordsLoaded) );
 
 
      finally
        Parser.Free;
        FileStream.Free;
        If not DeleteFileUTF8(UTF8FileName) then
-         SendDebug('Warning: Unable to delete temporary UTF8 file.');
+         SendDebug(rsErrTempFileNoDelete);
      end;
 
     end;

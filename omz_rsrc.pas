@@ -27,6 +27,9 @@ ResourceString
   rsIdxJobAss = 'Index Job Assignments...';
   rsIdxPosAss = 'Employee to Position Assignments...';
   rsUpdTree = 'Update Tree Display...';
+  rsErrTempFileNoDelete = 'Warning: Unable to delete temporary UTF8 file.';
+  rsRecordsLoaded = 'Records Loaded:';
+  rsErrAC2NInvalidLength = 'Invalid String Length for AlphaColToNumeric';
 implementation
 
 end.
