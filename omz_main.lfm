@@ -1,16 +1,16 @@
 object Form1: TForm1
-  Left = 289
+  Left = 114
   Height = 575
-  Top = 45
+  Top = 135
   Width = 791
   Caption = 'OM Zen'
-  ClientHeight = 554
+  ClientHeight = 575
   ClientWidth = 791
   Menu = MainMenu1
-  LCLVersion = '1.1'
+  LCLVersion = '1.0.14.0'
   object Panel1: TPanel
     Left = 664
-    Height = 360
+    Height = 381
     Top = 0
     Width = 127
     Align = alRight
@@ -18,11 +18,11 @@ object Form1: TForm1
   end
   object tvOrgChart: TTreeView
     Left = 0
-    Height = 360
+    Height = 381
     Top = 0
     Width = 664
     Align = alClient
-    DefaultItemHeight = 16
+    DefaultItemHeight = 22
     DragMode = dmAutomatic
     Images = ImageList1
     ScrollBars = ssAutoVertical
@@ -55,7 +55,7 @@ object Form1: TForm1
   object PageControl1: TPageControl
     Left = 0
     Height = 194
-    Top = 360
+    Top = 381
     Width = 791
     ActivePage = TabSheet1
     Align = alBottom
@@ -63,11 +63,11 @@ object Form1: TForm1
     TabOrder = 2
     object TabSheet1: TTabSheet
       Caption = 'Object Properties'
-      ClientHeight = 163
-      ClientWidth = 783
+      ClientHeight = 155
+      ClientWidth = 785
       object LabeledEdit1: TLabeledEdit
         Left = 84
-        Height = 26
+        Height = 22
         Top = 6
         Width = 200
         EditLabel.AnchorSideTop.Control = LabeledEdit1
@@ -75,10 +75,10 @@ object Form1: TForm1
         EditLabel.AnchorSideRight.Control = LabeledEdit1
         EditLabel.AnchorSideBottom.Control = LabeledEdit1
         EditLabel.AnchorSideBottom.Side = asrBottom
-        EditLabel.Left = 53
-        EditLabel.Height = 13
-        EditLabel.Top = 13
-        EditLabel.Width = 28
+        EditLabel.Left = 47
+        EditLabel.Height = 21
+        EditLabel.Top = 7
+        EditLabel.Width = 34
         EditLabel.Caption = 'Type:'
         EditLabel.ParentColor = False
         LabelPosition = lpLeft
@@ -88,7 +88,7 @@ object Form1: TForm1
       end
       object LabeledEdit2: TLabeledEdit
         Left = 84
-        Height = 26
+        Height = 22
         Top = 40
         Width = 136
         EditLabel.AnchorSideTop.Control = LabeledEdit2
@@ -96,10 +96,10 @@ object Form1: TForm1
         EditLabel.AnchorSideRight.Control = LabeledEdit2
         EditLabel.AnchorSideBottom.Control = LabeledEdit2
         EditLabel.AnchorSideBottom.Side = asrBottom
-        EditLabel.Left = 30
-        EditLabel.Height = 13
-        EditLabel.Top = 47
-        EditLabel.Width = 51
+        EditLabel.Left = 17
+        EditLabel.Height = 21
+        EditLabel.Top = 41
+        EditLabel.Width = 64
         EditLabel.Caption = 'Object ID:'
         EditLabel.ParentColor = False
         LabelPosition = lpLeft
@@ -109,23 +109,23 @@ object Form1: TForm1
       end
       object CheckBox1: TCheckBox
         Left = 291
-        Height = 22
+        Height = 18
         Top = 6
-        Width = 158
+        Width = 165
         Caption = 'Manages own Org. Unit'
         OnChange = CheckBox1Change
         TabOrder = 2
       end
       object StatusBar1: TStatusBar
         Left = 0
-        Height = 24
-        Top = 139
-        Width = 783
+        Height = 15
+        Top = 140
+        Width = 785
         Panels = <>
       end
       object leCstCtr: TLabeledEdit
         Left = 84
-        Height = 26
+        Height = 22
         Top = 70
         Width = 136
         EditLabel.AnchorSideTop.Control = leCstCtr
@@ -133,10 +133,10 @@ object Form1: TForm1
         EditLabel.AnchorSideRight.Control = leCstCtr
         EditLabel.AnchorSideBottom.Control = leCstCtr
         EditLabel.AnchorSideBottom.Side = asrBottom
-        EditLabel.Left = 16
-        EditLabel.Height = 13
-        EditLabel.Top = 77
-        EditLabel.Width = 65
+        EditLabel.Left = -1
+        EditLabel.Height = 21
+        EditLabel.Top = 71
+        EditLabel.Width = 82
         EditLabel.Caption = 'Cost Center:'
         EditLabel.ParentColor = False
         LabelPosition = lpLeft
@@ -146,7 +146,7 @@ object Form1: TForm1
       end
       object leJobCd: TLabeledEdit
         Left = 84
-        Height = 26
+        Height = 22
         Top = 102
         Width = 136
         EditLabel.AnchorSideTop.Control = leJobCd
@@ -154,10 +154,10 @@ object Form1: TForm1
         EditLabel.AnchorSideRight.Control = leJobCd
         EditLabel.AnchorSideBottom.Control = leJobCd
         EditLabel.AnchorSideBottom.Side = asrBottom
-        EditLabel.Left = 35
-        EditLabel.Height = 13
-        EditLabel.Top = 109
-        EditLabel.Width = 46
+        EditLabel.Left = 21
+        EditLabel.Height = 21
+        EditLabel.Top = 103
+        EditLabel.Width = 60
         EditLabel.Caption = 'job code:'
         EditLabel.ParentColor = False
         LabelPosition = lpLeft
@@ -167,7 +167,7 @@ object Form1: TForm1
       end
       object leJobText: TEdit
         Left = 228
-        Height = 26
+        Height = 22
         Top = 102
         Width = 152
         ReadOnly = True
@@ -175,7 +175,7 @@ object Form1: TForm1
       end
       object leKostlText: TEdit
         Left = 228
-        Height = 26
+        Height = 22
         Top = 70
         Width = 152
         ReadOnly = True
@@ -183,7 +183,7 @@ object Form1: TForm1
       end
       object leObjText: TEdit
         Left = 228
-        Height = 26
+        Height = 22
         Top = 40
         Width = 152
         ReadOnly = True
@@ -191,7 +191,7 @@ object Form1: TForm1
       end
       object leKostlTextL: TEdit
         Left = 388
-        Height = 26
+        Height = 22
         Top = 70
         Width = 248
         ReadOnly = True
@@ -199,7 +199,7 @@ object Form1: TForm1
       end
       object leJobTextL: TEdit
         Left = 388
-        Height = 26
+        Height = 22
         Top = 102
         Width = 248
         ReadOnly = True
@@ -207,7 +207,7 @@ object Form1: TForm1
       end
       object leObjTextL: TEdit
         Left = 388
-        Height = 26
+        Height = 22
         Top = 40
         Width = 248
         ReadOnly = True
