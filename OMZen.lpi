@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
     <Version Value="9"/>
@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="8">
       <Unit0>
         <Filename Value="OMZen.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -77,6 +77,10 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="omz_console"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="onz.ini"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

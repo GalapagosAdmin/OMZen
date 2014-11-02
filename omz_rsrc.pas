@@ -12,9 +12,10 @@ ResourceString
   rsPosition = 'Position';
   rsChiefPosition = 'Chief Position (Manager)';
   rsEmployee = 'Employee';
-  rsAbout = 'Org. Management Zen 1.03 by Noah Silva (c) 2013,2014.';
+  rsAbout = 'Org. Management Zen 1.04 by Noah Silva (c) 2013,2014.';
   rsImportSucc1000 = 'Infotype 1000 (Objects) Import Successful.';
   rsImportSucc1001 = 'Infotype 1001 (Relationships) Import Successful.';
+  rsImportSuccLXOM = 'Combined OM file Import successful.';
   rsImportSuccNHIRE = 'NHIRE (New Hire Action) Import Successful';
   rsImportSuccCCRMD = 'CCRMD (Cost Center Master Data) Import Successful';
   rsProcessingComplete = 'Import processing Complete.';
@@ -27,6 +28,9 @@ ResourceString
   rsIdxJobAss = 'Index Job Assignments...';
   rsIdxPosAss = 'Employee to Position Assignments...';
   rsUpdTree = 'Update Tree Display...';
+  rsErrTempFileNoDelete = 'Warning: Unable to delete temporary UTF8 file.';
+  rsRecordsLoaded = 'Records Loaded:';
+  rsErrAC2NInvalidLength = 'Invalid String Length for AlphaColToNumeric';
 implementation
 
 end.

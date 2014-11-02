@@ -33,6 +33,7 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    miImportLXCombi: TMenuItem;
     miNumberRange: TMenuItem;
     miTest: TMenuItem;
     miValidation: TMenuItem;
@@ -63,6 +64,7 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure miImportLXCombiClick(Sender: TObject);
     procedure miEEFileExportClick(Sender: TObject);
     procedure miImportSSLCCRMDClick(Sender: TObject);
     procedure miAboutClick(Sender: TObject);
@@ -205,6 +207,23 @@ procedure TForm1.MenuItem3Click(Sender: TObject);
 begin
   frmConsole.show;
   UnusedObjectReport(frmConsole.mmConsole.Lines);
+end;
+
+procedure TForm1.miImportLXCombiClick(Sender: TObject);
+begin
+   OpenDialog1.Filter:='OM File|ORGANIZATION*.txt';
+   OpenDialog1.title := 'Select ORGANIZATION TXT file...';
+    if OpenDialog1.Execute then
+    begin
+      Import_LX_Combo(OpenDialog1.FileName);
+      miProcess.enabled := True;
+      miImportSSL1001.Enabled := False;
+      miImportSSLCCRMD.Enabled := False;
+      miImportSSL1000.Checked := False;
+      miImportSSLNhire.Checked:=False;
+      StatusBar1.SimpleText := rsImportSuccLXOM;
+    end;
+
 end;
 
 procedure TForm1.miEEFileExportClick(Sender: TObject);
