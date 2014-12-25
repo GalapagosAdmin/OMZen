@@ -1,5 +1,6 @@
 unit omz_logic;
 // Reads input files, manages array
+// 2014.12.25 + Updates for LX Import Layout
 {$mode objfpc}{$H+}
 
 interface
@@ -707,7 +708,33 @@ Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
                  end;
                COL_K:begin // Full Path
                end;
-               COL_V:Begin    // Priority code and Final Column
+               COL_L:begin // Description (Local Language)
+                 end;
+               COL_M: begin // Full Path (Local Language)
+                 end;
+               COL_N: begin // Function Code
+                 end;
+               COL_O: Begin // Function Text
+                 end;
+               COL_P;begin  // Relationship Direction
+               end;
+               COL_Q:begin // Relationship Type Code
+                 end;
+               COL_R:begin // Relationship Type Text
+                 end;
+               COL_S:begin // Local Company Code (Parent OU)
+                 end;
+               COL_T:begin // Local Company Text (Parent OU)
+                 end;
+               COL_U:begin // Related Object Type
+                 end;
+               COL_V:begin // Related Object Type Text
+                 end;
+               COL_W:begin  // Local Org. Unit ID (Related Object)
+                 end;
+               COL_X:begin  // Local Org. Unit Text (Related Object)
+                 end;
+               COL_Y:Begin    // Priority code and Final Column
                  // ignore priority for now
                  if LineBuffer.ShortText <> '' then
                    begin
@@ -862,8 +889,8 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
          cRow := Parser.CurrentRow;
          cCol := Parser.CurrentCol;
         Case Parser.CurrentRow of
-         0,1:; // Skip header rows
-         else // Data starts from row 3 (zero based)
+         0:; // Skip header rows
+         else // Data starts from row 1 (zero based)
            begin
             tmpString := Parser.CurrentCellText;
 
@@ -893,20 +920,39 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
                //COL_M: // Local Object Long Text
                //COL_N: // Function Code
                //COL_O: // Function Text
+               COL_P;begin  // Relationship Direction
+               end;
+               COL_Q:begin // Relationship Type Code
+                 end;
+               COL_R:begin // Relationship Type Text
+                 end;
+               COL_S:begin // Local Company Code (Parent OU)
+                 end;
+               COL_T:begin // Local Company Text (Parent OU)
+                 end;
                COL_P:begin // Relationship Type (Direction + code)
                    LineBuffer.Relationship:=Parser.CurrentCellText;
                  end;
-               //COL_Q: // Relationship type Text
-               COL_R:begin // Destination Object Type Code
+               COL_Q:begin // Relationship Type Code
+                 end;
+               COL_R:begin // Relationship Type Text
+                 end;
+               COL_S:begin // Local Company Code (Parent OU)
+                 end;
+               COL_T:begin // Local Company Name (Parent OU)
+               end;
+               COL_U:begin // Related Object Type
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.DestObjType := Parser.CurrentCellText[1];
                  end;
-               //COL_S: // Destionation Object Type Text
-               COL_T:begin // Destination Object Number
-                   LineBuffer.DestObjNum := StrToInt64(Parser.CurrentCellText);
-               end;
-               //COL_U: //Destination Object Short Text
-               COL_V:begin //priority & Last Field
+               COL_V:begin // Related Object Type Text
+                 end;
+               COL_W:begin  // Local Org. Unit ID (Related Object)
+                 LineBuffer.DestObjNum := StrToInt64(Parser.CurrentCellText);
+                 end;
+               COL_X:begin  // Local Org. Unit Text (Related Object)
+                 end;
+               COL_Y:begin //priority & Last Field
                  Inc(RecordsLoaded);
                  SetLength(RelationshipList,RecordsLoaded);
                  SendDebug(LineBuffer.SrcObjType
