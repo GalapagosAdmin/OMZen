@@ -55,16 +55,19 @@ const
 type
   // We need 64 bit to cover some long cost centers.
   TObjID=int64;
+  TLocalID=String[17]; // for LX
 
   TRelationshipEntry=record
     // Standard SAP attributes
     SrcObjType:Char;
     SrcObjNum:TObjID;
+    SrcObjLocalID:TLocalID;
     Relationship:String[4];
     BeginDate:String[10];
     EndDate:String[10];
     DestObjType:Char;
     DestObjNum:TObjID;
+    LocalParentID:TLocalID;
     // Extra attributes for internal use
    // Stale:Boolean;
     Used:Boolean;
@@ -76,6 +79,7 @@ type
   TObjectEntry=record
     ObjType:Char;
     ObjNum:TObjID;
+    LocalID:TLocalID;
     BeginDate:String[10];
     EndDate:String[10];
     ShortText:String[24];
@@ -87,10 +91,12 @@ type
     ParentObjID:TObjID;
     Stale:Boolean;
     Chief:Boolean;
-    Job:TObjID;  // Job Code for Position
+    Job:TObjID;     // Job Code for Position
     CostCtr:TObjID; // Cost Center for Position or Org. Unit
     Used:Boolean;
-    Priority:Integer;
+    Priority:String[2];
+    // LX Attributes
+    LocalParentID:TLocalID;
   end;
 
   //  TRelationshipList=specialize TFPGList<TRelationshipEntry>;
@@ -164,7 +170,8 @@ Procedure IndexRelations;
 implementation
 
 uses
-  omz_rsrc, FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils;
+  omz_rsrc, FileUtil,lazutf8, fgl, CharEncStreams, dbugintf, strutils,
+  dcpripemd160;
 
 //class operator TRelationshipEntry.=(aLeft, aRight: TRelationshipEntry): Boolean;
 //begin
@@ -177,6 +184,24 @@ var
   HWMPosObjNum :LongInt;
   HWMEEObjNum  :LongInt;
   HWMCCObjNum  :LongInt;
+
+Function LocalIDToGlobalID(const LocalID:TLocalID):TObjID;
+  var
+    ever:byte;
+    HexStr:String[40];
+    r:TObjID;
+    Hash: TDCP_ripemd160;
+    Digest: array[0..19] of byte;  // RipeMD-160 produces a 160bit digest (20bytes)
+  begin
+      Hash:= TDCP_ripemd160.Create(nil);
+      Hash.Init;
+      Hash.UpdateStr(LocalID);
+      Hash.Final(Digest);
+      r := 0;
+      for ever := 0 to 19 do
+        r:= r + (Digest[ever]* (ever * 256));
+      Result := r;
+  end;
 
 // converts spreadsheet column (Letter) into zero based column number.
 Function AlphaColumnToNumeric(Const AlphaColumn:String):Integer;
@@ -300,7 +325,7 @@ Procedure UpdateHasParent;
              // If so, then we have a parent ID, so we set HasParent to True.
              then
                with ObjectList[i] do begin
-                 Used := True;  // what is the parent object doesn't exist?
+                 Used := True;  // what if the parent object doesn't exist?
                  ObjectList[RelationshipList[j].DestObjIdx].Used := True;
                  RelationshipList[j].Used := True;
                  HasParent := True;
@@ -688,7 +713,9 @@ Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
                  end;
                COL_H:begin // Object Type Text
                      end;
-               COL_I:begin // Object ID
+               COL_I:begin // Local Object ID
+                   LineBuffer.LocalID:=Parser.CurrentCellText;
+                   // Use hashing function to create an object number
                    LineBuffer.ObjNum:=StrToInt64(Parser.CurrentCellText);
                    // Update high water mark if necessary
                    case LineBuffer.ObjType of
@@ -697,6 +724,7 @@ Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
                      OBJ_POSITION: if LineBuffer.ObjNum > HWMPosObjNum then
                                        HWMPosObjNum := LineBuffer.ObjNum
                    end;  // of CASE
+
                  end;
                COL_J:begin // Short Text Description / Long Text Description
                    // Relationship lines may have duplicate entries without text.
@@ -716,7 +744,7 @@ Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
                  end;
                COL_O: Begin // Function Text
                  end;
-               COL_P;begin  // Relationship Direction
+               COL_P:begin  // Relationship Direction
                end;
                COL_Q:begin // Relationship Type Code
                  end;
@@ -912,7 +940,8 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
                  end;
                //COL_H: // Object Type Text
                COL_I:begin // Source Object ID
-                   LineBuffer.SrcObjNum:=StrToInt64(Parser.CurrentCellText);
+                   LineBuffer.SrcObjLocalID := Parser.CurrentCellText;
+                   LineBuffer.SrcObjNum:=LocalIDToGlobalID(Parser.CurrentCellText);
                  end;
                //COL_J: // Object Short Text
                //COL_K: // Object Long Text
@@ -920,7 +949,7 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
                //COL_M: // Local Object Long Text
                //COL_N: // Function Code
                //COL_O: // Function Text
-               COL_P;begin  // Relationship Direction
+               COL_P:begin  // Relationship Direction
                end;
                COL_Q:begin // Relationship Type Code
                  end;
@@ -930,17 +959,6 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
                  end;
                COL_T:begin // Local Company Text (Parent OU)
                  end;
-               COL_P:begin // Relationship Type (Direction + code)
-                   LineBuffer.Relationship:=Parser.CurrentCellText;
-                 end;
-               COL_Q:begin // Relationship Type Code
-                 end;
-               COL_R:begin // Relationship Type Text
-                 end;
-               COL_S:begin // Local Company Code (Parent OU)
-                 end;
-               COL_T:begin // Local Company Name (Parent OU)
-               end;
                COL_U:begin // Related Object Type
                    If length(Parser.CurrentCellText) > 0 then
                     LineBuffer.DestObjType := Parser.CurrentCellText[1];
@@ -948,7 +966,8 @@ Procedure Import_LX_Combo2(Const UTF8FileName:UTF8String);
                COL_V:begin // Related Object Type Text
                  end;
                COL_W:begin  // Local Org. Unit ID (Related Object)
-                 LineBuffer.DestObjNum := StrToInt64(Parser.CurrentCellText);
+                 LineBuffer.LocalParentID := Parser.CurrentCellText;
+                 LineBuffer.DestObjNum := LocalIDToGlobalID(Parser.CurrentCellText);
                  end;
                COL_X:begin  // Local Org. Unit Text (Related Object)
                  end;
