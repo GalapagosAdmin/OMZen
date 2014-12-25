@@ -716,7 +716,7 @@ Procedure Import_LX_Combo1(Const UTF8FileName:UTF8String);
                COL_I:begin // Local Object ID
                    LineBuffer.LocalID:=Parser.CurrentCellText;
                    // Use hashing function to create an object number
-                   LineBuffer.ObjNum:=StrToInt64(Parser.CurrentCellText);
+                   LineBuffer.ObjNum:=LocalIDToGlobalID(Parser.CurrentCellText);
                    // Update high water mark if necessary
                    case LineBuffer.ObjType of
                      OBJ_ORG_UNIT: if LineBuffer.ObjNum > HWMOUObjNum then

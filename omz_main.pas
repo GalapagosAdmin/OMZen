@@ -10,9 +10,9 @@ uses
 
 type
 
-  { TForm1 }
+  { TfrmMain }
 
-  TForm1 = class(TForm)
+  TfrmMain = class(TForm)
     bbAddChildOU: TBitBtn;
     bbAddEmployee2: TBitBtn;
     bbAddPosition: TBitBtn;
@@ -33,6 +33,7 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    miImportLX: TMenuItem;
     miImportLXCombi: TMenuItem;
     miNumberRange: TMenuItem;
     miTest: TMenuItem;
@@ -64,6 +65,7 @@ type
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure miImportLXClick(Sender: TObject);
     procedure miImportLXCombiClick(Sender: TObject);
     procedure miEEFileExportClick(Sender: TObject);
     procedure miImportSSLCCRMDClick(Sender: TObject);
@@ -88,7 +90,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  frmMain: TfrmMain;
 
 implementation
 
@@ -98,9 +100,9 @@ uses
 
 {$R *.lfm}
 
-{ TForm1 }
+{ TfrmMain }
 
-procedure TForm1.bbAddChildOUClick(Sender: TObject);
+procedure TfrmMain.bbAddChildOUClick(Sender: TObject);
 begin
    if tvOrgChart.Selected <> nil then
     begin
@@ -119,7 +121,7 @@ end;
 
 
 
-procedure TForm1.bbAddEmployee1Click(Sender: TObject);
+procedure TfrmMain.bbAddEmployee1Click(Sender: TObject);
 begin
    if tvOrgChart.Selected <> nil then
     begin
@@ -132,7 +134,7 @@ begin
     end;
 end;
 
-procedure TForm1.bbAddEmployee2Click(Sender: TObject);
+procedure TfrmMain.bbAddEmployee2Click(Sender: TObject);
 
   Procedure DeleteNode(Node:TTreeNode);
     begin
@@ -148,7 +150,7 @@ begin
      end;
 end;
 
-procedure TForm1.bbAddPositionClick(Sender: TObject);
+procedure TfrmMain.bbAddPositionClick(Sender: TObject);
 begin
    if tvOrgChart.Selected <> nil then
     begin
@@ -161,7 +163,7 @@ begin
     end;
 end;
 
-procedure TForm1.CheckBox1Change(Sender: TObject);
+procedure TfrmMain.CheckBox1Change(Sender: TObject);
 begin
    if tvOrgChart.Selected <> nil then
      begin
@@ -187,29 +189,47 @@ begin
 end;
 
 
-procedure TForm1.LabeledEdit1DragOver(Sender, Source: TObject; X, Y: Integer;
+procedure TfrmMain.LabeledEdit1DragOver(Sender, Source: TObject; X, Y: Integer;
   State: TDragState; var Accept: Boolean);
 begin
   Accept := true;
 end;
 
-procedure TForm1.MenuItem1Click(Sender: TObject);
+procedure TfrmMain.MenuItem1Click(Sender: TObject);
 begin
 
 end;
 
-procedure TForm1.MenuItem2Click(Sender: TObject);
+procedure TfrmMain.MenuItem2Click(Sender: TObject);
 begin
 
 end;
 
-procedure TForm1.MenuItem3Click(Sender: TObject);
+procedure TfrmMain.MenuItem3Click(Sender: TObject);
 begin
   frmConsole.show;
   UnusedObjectReport(frmConsole.mmConsole.Lines);
 end;
 
-procedure TForm1.miImportLXCombiClick(Sender: TObject);
+procedure TfrmMain.miImportLXClick(Sender: TObject);
+begin
+   openDialog1.Filter:='LX OM File|ORG-UPDCHG_*.txt';
+ OpenDialog1.title := 'Select LX TXT file...';
+    if OpenDialog1.Execute then
+    begin
+      Import_LX_Combo(OpenDialog1.FileName);
+      miImportSSL1001.Enabled := False;
+      miImportSSLCCRMD.Enabled := False;
+      miImportLX.Checked := True;
+      miImportSSLCCRMD.Checked := False;
+      miImportSSLNhire.Checked:=False;
+      miProcess.enabled := True;
+      StatusBar1.SimpleText := rsImportSuccLXOM;
+    end;
+
+end;
+
+procedure TfrmMain.miImportLXCombiClick(Sender: TObject);
 begin
    OpenDialog1.Filter:='OM File|ORGANIZATION*.txt';
    OpenDialog1.title := 'Select ORGANIZATION TXT file...';
@@ -226,7 +246,7 @@ begin
 
 end;
 
-procedure TForm1.miEEFileExportClick(Sender: TObject);
+procedure TfrmMain.miEEFileExportClick(Sender: TObject);
 Const
   sep:char=#9;
 var
@@ -318,7 +338,7 @@ if SaveDialog1.Execute then
   StatusBar1.SimpleText := 'Employee File Export Complete';
   end;
 end;
-procedure TForm1.miImportSSLCCRMDClick(Sender: TObject);
+procedure TfrmMain.miImportSSLCCRMDClick(Sender: TObject);
 begin
  openDialog1.Filter:='CCRMD|*CC*.txt';
  OpenDialog1.title := 'Select Cost Center TXT file...';
@@ -334,12 +354,12 @@ begin
      end;
 end;
 
-procedure TForm1.miAboutClick(Sender: TObject);
+procedure TfrmMain.miAboutClick(Sender: TObject);
 begin
   showmessage(rsAbout);
 end;
 
-procedure TForm1.miImportSSL1001Click(Sender: TObject);
+procedure TfrmMain.miImportSSL1001Click(Sender: TObject);
 begin
  openDialog1.Filter:='IT1001|*1001*.txt';
  OpenDialog1.title := 'Select IT1001 TXT file...';
@@ -353,7 +373,7 @@ begin
     end;
 end;
 
-procedure TForm1.miExportHTMLClick(Sender: TObject);
+procedure TfrmMain.miExportHTMLClick(Sender: TObject);
 var
   Node: TTreeNode;
   Padding: utf8string;
@@ -454,7 +474,7 @@ begin
    end;
 end;
 
-procedure TForm1.miExportDotClick(Sender: TObject);
+procedure TfrmMain.miExportDotClick(Sender: TObject);
 var
  dotFile:TextFile;
  i:LongInt;
@@ -497,7 +517,7 @@ begin
    end;
 end;
 
-procedure TForm1.miExportTsvClick(Sender: TObject);
+procedure TfrmMain.miExportTsvClick(Sender: TObject);
 begin
   if SaveDialog1.Execute then
     begin
@@ -507,7 +527,7 @@ begin
     end;
 end;
 
-procedure TForm1.miImportSSL1000Click(Sender: TObject);
+procedure TfrmMain.miImportSSL1000Click(Sender: TObject);
 begin
  openDialog1.Filter:='IT1000|*1000*.txt';
  OpenDialog1.title := 'Select IT1000 TXT file...';
@@ -523,7 +543,7 @@ begin
     end;
 end;
 
-procedure TForm1.miImportSSLNHIREClick(Sender: TObject);
+procedure TfrmMain.miImportSSLNHIREClick(Sender: TObject);
 begin
  openDialog1.Filter:='NHIRE|*NHIRE*.txt';
  OpenDialog1.title := 'Select NHIRE TXT file...';
@@ -538,13 +558,13 @@ begin
     end;
 end;
 
-procedure TForm1.miNumberRangeClick(Sender: TObject);
+procedure TfrmMain.miNumberRangeClick(Sender: TObject);
 begin
   frmConsole.show;
   NumberRangeReport(frmConsole.mmConsole.Lines)
 end;
 
-procedure TForm1.miProcessClick(Sender: TObject);
+procedure TfrmMain.miProcessClick(Sender: TObject);
 
 Procedure Add_ou_no_parent(const h,i,j:longint);
   var
@@ -725,7 +745,7 @@ begin
   StatusBar1.SimpleText := rsProcessingComplete;
 end;
 
-procedure TForm1.miTestClick(Sender: TObject);
+procedure TfrmMain.miTestClick(Sender: TObject);
 var
    PosObj:TObjectEntry;
    posnumber:int64;
@@ -737,7 +757,7 @@ begin
   LongText := PosObj.LongText;
 end;
 
-procedure TForm1.tvOrgChartClick(Sender: TObject);
+procedure TfrmMain.tvOrgChartClick(Sender: TObject);
 var
   ObjID:TObjID;
   ObjectEntry:TObjectEntry;
@@ -804,7 +824,7 @@ begin
     end;
 end;
 
-procedure TForm1.tvOrgChartDragDrop(Sender, Source: TObject; X, Y: Integer);
+procedure TfrmMain.tvOrgChartDragDrop(Sender, Source: TObject; X, Y: Integer);
 var
   tv     : TTreeView;
   iNode  : TTreeNode;
@@ -828,7 +848,7 @@ begin
   end;
 end;
 
-procedure TForm1.tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;
+procedure TfrmMain.tvOrgChartDragOver(Sender, Source: TObject; X, Y: Integer;
   State: TDragState; var Accept: Boolean);
 begin
   Accept := True;

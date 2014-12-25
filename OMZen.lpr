@@ -15,7 +15,7 @@ omz_console;
 begin
   RequireDerivedFormResource := True;
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmMain, frmMain);
   Application.CreateForm(TfrmConsole, frmConsole);
   Application.Run;
 end.

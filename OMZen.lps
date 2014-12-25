@@ -13,43 +13,46 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="47" Y="14"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="129"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="omz_main.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="Form1"/>
+        <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="omz_main"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="112" Y="7"/>
-        <UsageCount Value="127"/>
+        <TopLine Value="823"/>
+        <CursorPos X="3" Y="700"/>
+        <UsageCount Value="129"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="omz_logic.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="omz_logic"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="56"/>
-        <CursorPos X="28" Y="70"/>
-        <UsageCount Value="127"/>
+        <TopLine Value="951"/>
+        <CursorPos X="20" Y="972"/>
+        <UsageCount Value="129"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="csvdocument\csvdocument.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="CsvDocument"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="429"/>
         <CursorPos X="30" Y="438"/>
-        <UsageCount Value="125"/>
+        <UsageCount Value="127"/>
+        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="utf8tools\charencstreams.pas"/>
@@ -58,7 +61,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="57"/>
         <CursorPos X="1" Y="71"/>
-        <UsageCount Value="122"/>
+        <UsageCount Value="124"/>
       </Unit4>
       <Unit5>
         <Filename Value="omz_rsrc.pas"/>
@@ -67,7 +70,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="41" Y="11"/>
-        <UsageCount Value="93"/>
+        <UsageCount Value="95"/>
       </Unit5>
       <Unit6>
         <Filename Value="omz_console.pas"/>
@@ -80,13 +83,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="16" Y="1"/>
-        <UsageCount Value="82"/>
+        <UsageCount Value="84"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="onz.ini"/>
         <IsPartOfProject Value="True"/>
-        <UsageCount Value="26"/>
+        <UsageCount Value="28"/>
       </Unit7>
       <Unit8>
         <Filename Value="C:\lazarus\components\lazutils\fileutil.pas"/>
@@ -152,7 +156,7 @@
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
-    <JumpHistory Count="16" HistoryIndex="15">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="omz_logic.pas"/>
         <Caret Line="946" Column="19" TopLine="931"/>
@@ -217,6 +221,58 @@
         <Filename Value="omz_logic.pas"/>
         <Caret Line="898" Column="20" TopLine="886"/>
       </Position16>
+      <Position17>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="7" Column="112" TopLine="1"/>
+      </Position17>
+      <Position18>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="524" Column="1" TopLine="510"/>
+      </Position18>
+      <Position19>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="531" Column="1" TopLine="517"/>
+      </Position19>
+      <Position20>
+        <Filename Value="omz_logic.pas"/>
+        <Caret Line="99" Column="37" TopLine="78"/>
+      </Position20>
+      <Position21>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="256" Column="35" TopLine="234"/>
+      </Position21>
+      <Position22>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="369" Column="1" TopLine="361"/>
+      </Position22>
+      <Position23>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="221" Column="39" TopLine="214"/>
+      </Position23>
+      <Position24>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="223" Column="15" TopLine="212"/>
+      </Position24>
+      <Position25>
+        <Filename Value="omz_logic.pas"/>
+        <Caret Line="757" Column="2" TopLine="650"/>
+      </Position25>
+      <Position26>
+        <Filename Value="omz_logic.pas"/>
+        <Caret Line="802" Column="20" TopLine="784"/>
+      </Position26>
+      <Position27>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="700" Column="3" TopLine="696"/>
+      </Position27>
+      <Position28>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="532" Column="2" TopLine="529"/>
+      </Position28>
+      <Position29>
+        <Filename Value="omz_main.pas"/>
+        <Caret Line="364" Column="2" TopLine="375"/>
+      </Position29>
     </JumpHistory>
   </ProjectSession>
   <EditorMacros Count="0"/>
